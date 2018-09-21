@@ -5,11 +5,6 @@
     "build": "node_modules/.bin/tsc",
     "test": "mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts"
   },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "printWidth": 140
-  },
   "dependencies": {
     "google-protobuf": "^3.6.1",
     "source-map-support": "^0.5.9",
@@ -23,7 +18,6 @@
     "@types/ws": "^6.0.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "prettier": "^1.14.2",
     "ts-node": "^7.0.1",
     "ts-protoc-gen": "^0.7.6",
     "typescript": "^3.0.3"

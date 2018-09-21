@@ -1,3 +1,4 @@
+node_modules
 packages/protocol/node_modules
 packages/server/node_modules
 packages/client/node_modules
@@ -5,3 +6,5 @@ packages/client/node_modules
 packages/protocol/dist
 packages/server/dist
 packages/client/dist
+
+lint.log

@@ -5,10 +5,10 @@ const options = {
   updatesPerSecond: 10
 }
 
-//TODO proper logging
-//TODO should we add a id to the websocket? should the websocket send one to us
-//or should we provide one in the setup? in the client we have a peer id but I think that's random
-//TODO if we add a ws id we should include that in the logs
+// TODO proper logging
+// TODO should we add a id to the websocket? should the websocket send one to us
+// or should we provide one in the setup? in the client we have a peer id but I think that's random
+// TODO if we add a ws id we should include that in the logs
 
 export class CommServer {
   private wss: WebSocket.Server
@@ -71,7 +71,7 @@ export class CommServer {
   }
 
   protected sendSetupMessage(ws: WebSocket) {
-    var message = new SetupMessage()
+    const message = new SetupMessage()
     message.setType(MessageType.SETUP)
     message.setUpdatesPerSecond(options.updatesPerSecond)
     sendMessage(ws, message)

@@ -15,7 +15,7 @@ export function sendMessage(ws: WebSocket, msg) {
     throw Error('cannot send a message without a type')
   }
   const bytes = msg.serializeBinary()
-  //TODO: log error at least
+  // TODO: log or handler error
   ws.send(bytes)
 }
 
