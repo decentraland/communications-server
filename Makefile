@@ -15,6 +15,7 @@ devlink: link
 	cd ./packages/client; npm link dcl-comm-protocol
 
 install:
+	npm i
 	cd ./packages/server; npm i
 	cd ./packages/protocol/; npm i
 	cd ./packages/client; npm i

@@ -11,7 +11,7 @@
     "precommit": "lint-staged && npm run lint"
   },
   "lint-staged": {
-    "*.{ts}": [
+    "packages/**/*.{ts,js}": [
       "./bin/lint-precommit.sh"
     ]
   },

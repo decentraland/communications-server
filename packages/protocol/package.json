@@ -7,19 +7,6 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "printWidth": 140
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,ts}": ["prettier --write", "git add"]
-  },
   "dependencies": {
     "google-protobuf": "^3.6.1",
     "source-map-support": "^0.5.9",
@@ -32,15 +19,9 @@
     "@types/node": "^10.10.1",
     "@types/ws": "^6.0.1",
     "chai": "^4.1.2",
-    "dcl-tslint-config-standard": "^1.1.0",
-    "husky": "^1.0.0-rc.14",
-    "lint-staged": "^7.3.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.14.2",
     "ts-node": "^7.0.1",
     "ts-protoc-gen": "^0.7.6",
-    "tslint": "^5.11.0",
-    "tslint-language-service": "^0.9.9",
     "typescript": "^3.0.3"
   }
 }
