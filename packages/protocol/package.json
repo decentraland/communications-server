@@ -1,0 +1,33 @@
+{
+  "name": "dcl-comm-protocol",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node_modules/.bin/tsc && cp src/comm_pb.* dist",
+    "test": "mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 140
+  },
+  "dependencies": {
+    "google-protobuf": "^3.6.1",
+    "source-map-support": "^0.5.9",
+    "ws": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.5",
+    "@types/google-protobuf": "^3.2.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.10.1",
+    "@types/ws": "^6.0.1",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "prettier": "^1.14.2",
+    "ts-node": "^7.0.1",
+    "ts-protoc-gen": "^0.7.6",
+    "typescript": "^3.0.3"
+  }
+}

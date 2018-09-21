@@ -1,10 +1,9 @@
 {
-  "name": "commserver",
+  "name": "dcl-comm-client",
   "version": "1.0.0",
   "scripts": {
     "build": "node_modules/.bin/tsc",
-    "test": "mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts",
-    "build:proto": "protoc --js_out=import_style=commonjs,binary:. proto/*.prot"
+    "test": "mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts"
   },
   "prettier": {
     "semi": false,

@@ -1,6 +1,5 @@
 import * as WebSocket from 'ws'
-import { GenericMessage, MessageType, ChatMessage, SetupMessage, PositionMessage } from '../proto/comm_pb'
-import { decodeMessageType, sendMessage } from './wsUtils'
+import { decodeMessageType, sendMessage, GenericMessage, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
 
 const options = {
   updatesPerSecond: 10

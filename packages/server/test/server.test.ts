@@ -2,11 +2,10 @@ import 'mocha'
 import { expect } from 'chai'
 import * as WebSocket from 'ws'
 import * as http from 'http'
-import { CommServer } from '../src/server'
-import { decodeMessageType } from '../src/wsUtils'
-import { GenericMessage, ChatMessage, SetupMessage, MessageType } from '../proto/comm_pb'
 import { AddressInfo } from 'net'
 import { setupMaster } from 'cluster'
+import { CommServer } from '../src/server'
+import { decodeMessageType, sendMessage, GenericMessage, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
 
 describe('server tests', () => {
   let httpServer, commServer

@@ -1,4 +1,4 @@
-import { MessageType, GenericMessage } from '../proto/comm_pb'
+import { MessageType, GenericMessage } from './comm_pb'
 import * as WebSocket from 'ws'
 
 export function decodeMessageType(msg: Uint8Array) {
@@ -18,3 +18,5 @@ export function sendMessage(ws: WebSocket, msg) {
   //TODO: log error at least
   ws.send(bytes)
 }
+
+export * from './comm_pb'
