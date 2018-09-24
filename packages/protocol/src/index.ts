@@ -1,4 +1,4 @@
-import { MessageType, GenericMessage } from '../proto/comm_pb'
+import { MessageType, GenericMessage } from './comm_pb'
 import * as WebSocket from 'ws'
 
 export function decodeMessageType(msg: Uint8Array) {
@@ -15,6 +15,8 @@ export function sendMessage(ws: WebSocket, msg) {
     throw Error('cannot send a message without a type')
   }
   const bytes = msg.serializeBinary()
-  //TODO: log error at least
+  // TODO: log or handler error
   ws.send(bytes)
 }
+
+export * from './comm_pb'

@@ -1,6 +1,5 @@
 import * as WebSocket from 'ws'
-import { MessageType, ChatMessage, SetupMessage, PositionMessage } from '../proto/comm_pb'
-import { decodeMessageType } from './wsUtils'
+import { decodeMessageType, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
 
 export class CommClient {
   private ws: WebSocket
