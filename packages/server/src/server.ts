@@ -1,14 +1,37 @@
+// Open questions:
+// Esteban suggested that ProtocolBuffer in js is not the best alternative (he
+// used protobufjs), apparently he had memory issues before: he suggested to use
+// json + gzip instead
+
+// TODO handle uncaught errors
+
 import * as WebSocket from 'ws'
-import { decodeMessageType, sendMessage, GenericMessage, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
+import * as uuid from 'uuid/v4'
+import { EnrichedWebSocket, V2, CommunicationArea } from './utils'
+import {
+  decodeMessageType,
+  sendMessage,
+  GenericMessage,
+  MessageType,
+  ChatMessage,
+  PositionMessage,
+  ServerSetupRequestMessage
+} from 'dcl-comm-protocol'
+import { EventEmitter } from 'events'
 
+import * as bunyan from 'bunyan'
+
+// TODO proper logging configuration
+const logger = bunyan.createLogger({
+  name: 'dcl-communication-server',
+  serializers: bunyan.stdSerializers
+})
+
+// TODO move the options to a config file or something
 const options = {
-  updatesPerSecond: 10
+  updatesPerSecond: 10,
+  communicationRadius: 10
 }
-
-// TODO proper logging
-// TODO should we add a id to the websocket? should the websocket send one to us
-// or should we provide one in the setup? in the client we have a peer id but I think that's random
-// TODO if we add a ws id we should include that in the logs
 
 export class CommServer {
   private wss: WebSocket.Server
@@ -17,40 +40,52 @@ export class CommServer {
     const self = this
     this.wss = wss
 
-    this.wss.on('connection', (ws: WebSocket) => {
+    this.wss.on('connection', (ws: EnrichedWebSocket) => {
+      const id = uuid()
+      ws.id = id
       self.sendSetupMessage(ws)
 
       ws.on('message', (msg: Uint8Array) => {
         const msgType = decodeMessageType(msg)
         switch (msgType) {
-          case MessageType.UNKNOWN:
+          case MessageType.UNKNOWN: {
             self.onUnsupportedMessage(ws, msgType, msg)
             break
-          case MessageType.CHAT:
+          }
+          case MessageType.CHAT: {
+            let message
             try {
-              const message = ChatMessage.deserializeBinary(msg)
-              self.onChatMessage(ws, message)
+              message = ChatMessage.deserializeBinary(msg)
             } catch (e) {
-              console.error('cannot deserialize chat message', msg)
+              const logPayload = { err: e, id, msg, msgType, msgTypeName: 'chat' }
+              logger.error(logPayload, 'Cannot deserialize message')
             }
+            self.onChatMessage(ws, message)
             break
-          case MessageType.POSITION:
+          }
+          case MessageType.POSITION: {
+            let message
             try {
-              const message = ChatMessage.deserializeBinary(msg)
-              self.onChatMessage(ws, message)
+              message = PositionMessage.deserializeBinary(msg)
             } catch (e) {
-              console.error('cannot deserialize position message', msg)
+              const logPayload = { err: e, id, msg, msgType, msgTypeName: 'position' }
+              logger.error(logPayload, 'Cannot deserialize message')
             }
+            self.onPositionMessage(ws, message)
             break
-          default:
-            console.log('ignoring message with type', msgType)
+          }
+          default: {
+            const logPayload = { id, msg, msgType }
+            logger.info(logPayload, 'Cannot deserialize message')
             break
+          }
         }
       })
     })
 
-    this.wss.on('error', function open(err) {
-      console.log('SERVER ERROR', err)
+    this.wss.on('error', err => {
+      // TODO: handle this
+      logger.error({ err }, 'websocket server error')
     })
   }
 
@@ -58,36 +93,59 @@ export class CommServer {
     this.wss.close()
   }
 
-  protected onPositionMessage(ws: WebSocket, message: PositionMessage) {
+  protected onPositionMessage(ws: EnrichedWebSocket, message: PositionMessage) {
+    const msgTimestamp = message.getTime()
+    if (!ws.lastPositionUpdate || ws.lastPositionUpdate < msgTimestamp) {
+      ws.position = new V2(Math.trunc(message.getX()), Math.trunc(message.getY()))
+    }
+
+    if (msgTimestamp > 0) {
+      this.broadcast(ws, message)
+    }
+  }
+
+  protected onChatMessage(ws: EnrichedWebSocket, message: ChatMessage) {
     this.broadcast(ws, message)
   }
 
-  protected onChatMessage(ws: WebSocket, message: ChatMessage) {
-    this.broadcast(ws, message)
-  }
-
-  protected onUnsupportedMessage(ws: WebSocket, messageType: MessageType, message) {
-    console.log('unsupported message', messageType, message)
+  protected onUnsupportedMessage(ws: EnrichedWebSocket, messageType: MessageType, message) {
+    logger.info('unsupported message', messageType, message)
   }
 
   protected sendSetupMessage(ws: WebSocket) {
-    const message = new SetupMessage()
-    message.setType(MessageType.SETUP)
+    const message = new ServerSetupRequestMessage()
+    message.setType(MessageType.SERVER_REQUEST_SETUP)
     message.setUpdatesPerSecond(options.updatesPerSecond)
     sendMessage(ws, message)
   }
 
-  private broadcast(ws: WebSocket, msg) {
+  private broadcast(ws: EnrichedWebSocket, msg) {
     const genericMessage = msg as GenericMessage
-    if (!genericMessage.getType()) {
+    const msgType = genericMessage.getType()
+    if (genericMessage.getType() === MessageType.UNKNOWN) {
       throw Error('cannot send a message without a type')
     }
     const bytes = msg.serializeBinary()
 
-    this.wss.clients.forEach(client => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(bytes)
-      }
-    })
+    if (ws.position) {
+      const commArea = new CommunicationArea(ws.position, options.communicationRadius)
+      const totalClients = this.wss.clients.size
+      let clientsReached = 0
+
+      // TODO: metric time spent in this loop
+      this.wss.clients.forEach((client: EnrichedWebSocket) => {
+        if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
+          clientsReached++
+          client.send(bytes, err => {
+            if (err) {
+              // TODO: should be do something else here?
+              logger.error({ err: err, id: client.id, msgType }, 'error sending to client')
+            }
+          })
+        }
+      })
+
+      // TODO metric clientsReached/totalClients ratio
+    }
   }
 }

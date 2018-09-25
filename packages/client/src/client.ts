@@ -1,23 +1,32 @@
 import * as WebSocket from 'ws'
-import { decodeMessageType, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
+import { decodeMessageType, sendMessage, MessageType, ChatMessage, PositionMessage, ServerSetupRequestMessage } from 'dcl-comm-protocol'
+
+interface ClientStrategy {
+  onSetupMessage(ws: WebSocket, message: ServerSetupRequestMessage)
+  onPositionMessage(ws: WebSocket, message: PositionMessage)
+  onChatMessage(ws: WebSocket, message: ChatMessage)
+  onUnsupportedMessage(ws: WebSocket, messageType: MessageType, message)
+}
 
 export class CommClient {
   private ws: WebSocket
+  private strategy: ClientStrategy
 
-  constructor(ws) {
+  constructor(ws, strategy: ClientStrategy) {
     const self = this
     this.ws = ws
+    this.strategy = strategy
 
     this.ws.on('message', (msg: Uint8Array) => {
       const msgType = decodeMessageType(msg)
       switch (msgType) {
         case MessageType.UNKNOWN:
-          self.onUnsupportedMessage(ws, msgType, msg)
+          strategy.onUnsupportedMessage(ws, msgType, msg)
           break
-        case MessageType.SETUP:
+        case MessageType.SERVER_REQUEST_SETUP:
           try {
-            const message = SetupMessage.deserializeBinary(msg)
-            self.onSetupMessage(ws, message)
+            const message = ServerSetupRequestMessage.deserializeBinary(msg)
+            strategy.onSetupMessage(ws, message)
           } catch (e) {
             console.error('cannot deserialize setup message', msg)
           }
@@ -25,17 +34,17 @@ export class CommClient {
         case MessageType.CHAT:
           try {
             const message = ChatMessage.deserializeBinary(msg)
-            self.onChatMessage(ws, message)
+            strategy.onChatMessage(ws, message)
           } catch (e) {
             console.error('cannot deserialize chat message', msg)
           }
           break
         case MessageType.POSITION:
           try {
-            const message = ChatMessage.deserializeBinary(msg)
-            self.onChatMessage(ws, message)
+            const message = PositionMessage.deserializeBinary(msg)
+            strategy.onPositionMessage(ws, message)
           } catch (e) {
-            console.error('cannot deserialize position message', msg)
+            console.error('cannot deserialize position message', e, msg)
           }
           break
         default:
@@ -48,9 +57,4 @@ export class CommClient {
       console.log('CLIENT ERROR', err)
     })
   }
-
-  protected onSetupMessage(ws: WebSocket, message: SetupMessage) {}
-  protected onPositionMessage(ws: WebSocket, message: PositionMessage) {}
-  protected onChatMessage(ws: WebSocket, message: ChatMessage) {}
-  protected onUnsupportedMessage(ws: WebSocket, messageType: MessageType, message) {}
 }

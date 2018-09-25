@@ -1,10 +1,8 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 enum MessageType {
   UNKNOWN = 0;
-  SETUP = 1;
+  SERVER_REQUEST_SETUP = 1;
   POSITION = 2;
   CHAT = 3;
 }
@@ -13,20 +11,22 @@ message GenericMessage {
     MessageType type = 1;
 }
 
-message SetupMessage {
+message ServerSetupRequestMessage {
     MessageType type = 1;
     uint32 updates_per_second = 2;
 }
 
 message PositionMessage {
     MessageType type = 1;
-    int32 x = 2;
-    int32 y = 3;
-    google.protobuf.Timestamp time = 4;
+    float x = 2;
+    float y = 3;
+    uint64 time = 4;
 }
 
 message ChatMessage {
     MessageType type = 1;
-    PositionMessage position = 2;
-    string text = 3;
+    float x = 2;
+    float y = 3;
+    string text = 4;
+    uint64 time = 5;
 }

@@ -34,7 +34,7 @@ build: build-server build-client
 test-server:
 	cd ./packages/server; npm run test
 
-test: test-server
+test: build test-server
 
 lint:
 	./node_modules/.bin/tslint -p packages/client/; ./node_modules/.bin/tslint -p packages/server/; ./node_modules/.bin/tslint -p packages/protocol/
