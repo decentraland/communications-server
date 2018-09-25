@@ -351,7 +351,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         rotationY: +jspb.Message.getFieldWithDefault(msg, 5, 0.0),
         rotationZ: +jspb.Message.getFieldWithDefault(msg, 6, 0.0),
         rotationW: +jspb.Message.getFieldWithDefault(msg, 7, 0.0),
-        time: jspb.Message.getFieldWithDefault(msg, 8, 0),
+        time: +jspb.Message.getFieldWithDefault(msg, 8, 0.0),
         peerId: jspb.Message.getFieldWithDefault(msg, 9, '')
       }
 
@@ -416,7 +416,7 @@ proto.PositionMessage.deserializeBinaryFromReader = function(msg, reader) {
         msg.setRotationW(value)
         break
       case 8:
-        var value = /** @type {number} */ (reader.readUint64())
+        var value = /** @type {number} */ (reader.readDouble())
         msg.setTime(value)
         break
       case 9:
@@ -479,8 +479,8 @@ proto.PositionMessage.serializeBinaryToWriter = function(message, writer) {
     writer.writeFloat(7, f)
   }
   f = message.getTime()
-  if (f !== 0) {
-    writer.writeUint64(8, f)
+  if (f !== 0.0) {
+    writer.writeDouble(8, f)
   }
   f = message.getPeerId()
   if (f.length > 0) {
@@ -580,16 +580,16 @@ proto.PositionMessage.prototype.setRotationW = function(value) {
 }
 
 /**
- * optional uint64 time = 8;
+ * optional double time = 8;
  * @return {number}
  */
 proto.PositionMessage.prototype.getTime = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0))
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 8, 0.0))
 }
 
 /** @param {number} value */
 proto.PositionMessage.prototype.setTime = function(value) {
-  jspb.Message.setProto3IntField(this, 8, value)
+  jspb.Message.setProto3FloatField(this, 8, value)
 }
 
 /**
@@ -654,7 +654,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
         positionX: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
         positionY: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
         text: jspb.Message.getFieldWithDefault(msg, 4, ''),
-        time: jspb.Message.getFieldWithDefault(msg, 5, 0),
+        time: +jspb.Message.getFieldWithDefault(msg, 5, 0.0),
         peerId: jspb.Message.getFieldWithDefault(msg, 6, '')
       }
 
@@ -707,7 +707,7 @@ proto.ChatMessage.deserializeBinaryFromReader = function(msg, reader) {
         msg.setText(value)
         break
       case 5:
-        var value = /** @type {number} */ (reader.readUint64())
+        var value = /** @type {number} */ (reader.readDouble())
         msg.setTime(value)
         break
       case 6:
@@ -758,8 +758,8 @@ proto.ChatMessage.serializeBinaryToWriter = function(message, writer) {
     writer.writeString(4, f)
   }
   f = message.getTime()
-  if (f !== 0) {
-    writer.writeUint64(5, f)
+  if (f !== 0.0) {
+    writer.writeDouble(5, f)
   }
   f = message.getPeerId()
   if (f.length > 0) {
@@ -820,16 +820,16 @@ proto.ChatMessage.prototype.setText = function(value) {
 }
 
 /**
- * optional uint64 time = 5;
+ * optional double time = 5;
  * @return {number}
  */
 proto.ChatMessage.prototype.getTime = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0))
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 5, 0.0))
 }
 
 /** @param {number} value */
 proto.ChatMessage.prototype.setTime = function(value) {
-  jspb.Message.setProto3IntField(this, 5, value)
+  jspb.Message.setProto3FloatField(this, 5, value)
 }
 
 /**

@@ -24,7 +24,7 @@ message PositionMessage {
     float rotation_y = 5;
     float rotation_z = 6;
     float rotation_w = 7;
-    uint64 time = 8;
+    double time = 8;
     string peer_id = 9;
 }
 
@@ -33,6 +33,6 @@ message ChatMessage {
     float position_x = 2;
     float position_y = 3;
     string text = 4;
-    uint64 time = 5;
+    double time = 5;
     string peer_id = 6;
 }
