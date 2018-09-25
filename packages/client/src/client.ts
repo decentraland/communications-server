@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws'
 import { decodeMessageType, sendMessage, MessageType, ChatMessage, PositionMessage, ServerSetupRequestMessage } from 'dcl-comm-protocol'
 
-interface ClientStrategy {
+export interface ClientStrategy {
   onSetupMessage(ws: WebSocket, message: ServerSetupRequestMessage)
   onPositionMessage(ws: WebSocket, message: PositionMessage)
   onChatMessage(ws: WebSocket, message: ChatMessage)
@@ -15,18 +15,18 @@ export class CommClient {
   constructor(ws, strategy: ClientStrategy) {
     const self = this
     this.ws = ws
-    this.strategy = strategy
+    self.strategy = strategy
 
     this.ws.on('message', (msg: Uint8Array) => {
       const msgType = decodeMessageType(msg)
       switch (msgType) {
         case MessageType.UNKNOWN:
-          strategy.onUnsupportedMessage(ws, msgType, msg)
+          self.strategy.onUnsupportedMessage(ws, msgType, msg)
           break
         case MessageType.SERVER_REQUEST_SETUP:
           try {
             const message = ServerSetupRequestMessage.deserializeBinary(msg)
-            strategy.onSetupMessage(ws, message)
+            self.strategy.onSetupMessage(ws, message)
           } catch (e) {
             console.error('cannot deserialize setup message', msg)
           }
@@ -34,7 +34,7 @@ export class CommClient {
         case MessageType.CHAT:
           try {
             const message = ChatMessage.deserializeBinary(msg)
-            strategy.onChatMessage(ws, message)
+            self.strategy.onChatMessage(ws, message)
           } catch (e) {
             console.error('cannot deserialize chat message', msg)
           }
@@ -42,7 +42,7 @@ export class CommClient {
         case MessageType.POSITION:
           try {
             const message = PositionMessage.deserializeBinary(msg)
-            strategy.onPositionMessage(ws, message)
+            self.strategy.onPositionMessage(ws, message)
           } catch (e) {
             console.error('cannot deserialize position message', e, msg)
           }
@@ -54,7 +54,23 @@ export class CommClient {
     })
 
     this.ws.on('error', function open(err) {
-      console.log('CLIENT ERROR', err)
+      console.error('CLIENT ERROR', err)
     })
+  }
+
+  // TODO fields
+  public sendPositionMessage(callback) {
+    const m = new PositionMessage()
+    m.setType(MessageType.POSITION)
+
+    sendMessage(this.ws, m, callback)
+  }
+
+  // TODO fields
+  public sendChatMessage(callback) {
+    const m = new PositionMessage()
+    m.setType(MessageType.CHAT)
+
+    sendMessage(this.ws, m, callback)
   }
 }
