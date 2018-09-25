@@ -17,7 +17,6 @@ import {
   PositionMessage,
   ServerSetupRequestMessage
 } from 'dcl-comm-protocol'
-import { EventEmitter } from 'events'
 
 import * as bunyan from 'bunyan'
 

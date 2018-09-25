@@ -2,19 +2,10 @@ import 'mocha'
 import * as chai from 'chai'
 import * as WebSocket from 'ws'
 import * as http from 'http'
-import { AddressInfo } from 'net'
-import { setupMaster } from 'cluster'
-import { CommServer } from '../src/server'
-import { V2 } from '../src/utils'
-import {
-  decodeMessageType,
-  sendMessage,
-  GenericMessage,
-  MessageType,
-  ChatMessage,
-  ServerSetupRequestMessage,
-  PositionMessage
-} from 'dcl-comm-protocol'
+import { CommServer, V2 } from 'dcl-comm-server'
+import { GenericMessage, MessageType } from 'dcl-comm-protocol'
+
+import { messageTypeMatcher, buildPositionMessage, buildChatMessage } from '../utils/messageHelpers'
 
 import * as sinon from 'sinon'
 import * as sinonChai from 'sinon-chai'
@@ -22,32 +13,6 @@ import { EventEmitter } from 'events'
 chai.use(sinonChai)
 
 const expect = chai.expect
-
-function messageTypeMatcher(typeToMatch) {
-  return sinon.match(msg => {
-    const msgType = decodeMessageType(msg)
-    return msgType === typeToMatch
-  })
-}
-
-function buildPositionMessage(x: number, y: number, time?: Date) {
-  const m = new PositionMessage()
-  m.setType(MessageType.POSITION)
-  m.setX(x)
-  m.setY(y)
-  m.setTime((time ? time : new Date()).getTime())
-  return m
-}
-
-function buildChatMessage(x: number, y: number, text: string, time?: Date) {
-  const m = new ChatMessage()
-  m.setType(MessageType.CHAT)
-  m.setX(x)
-  m.setY(y)
-  m.setText(text)
-  m.setTime((time ? time : new Date()).getTime())
-  return m
-}
 
 function fakeConnect(wss, ws) {
   ws.readyState = WebSocket.OPEN
@@ -131,7 +96,8 @@ describe('server tests', () => {
   })
 
   describe('broadcast', () => {
-    let ws1, ws2
+    let ws1
+    let ws2
 
     beforeEach('connect two clients', () => {
       ws1 = new EventEmitter() as WebSocket

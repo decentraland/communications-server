@@ -5,6 +5,9 @@ proto:
         --ts_out=. \
        ./src/*.proto
 
+clean:
+	rm -r ./packages/server/node_modules ./packages/protocol/node_modules ./packages/client/node_modules node_modules
+
 link:
 	cd ./packages/server; npm link
 	cd ./packages/protocol; npm link
@@ -13,6 +16,9 @@ link:
 devlink: link
 	cd ./packages/server; npm link dcl-comm-protocol
 	cd ./packages/client; npm link dcl-comm-protocol
+	npm link dcl-comm-protocol
+	npm link dcl-comm-server
+	npm link dcl-comm-client
 
 install:
 	npm i
@@ -29,17 +35,15 @@ build-server: build-protocol
 build-client: build-protocol
 	cd ./packages/client; npm run build
 
-build: build-server build-client
+build: build-server build-client build-protocol
 
-test-server:
-	cd ./packages/server; npm run test
-
-test-client:
-	cd ./packages/client; npm run test
-
-test: build test-server test-client
+test: build
+	node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
 
 lint:
-	./node_modules/.bin/tslint -p packages/client/; ./node_modules/.bin/tslint -p packages/server/; ./node_modules/.bin/tslint -p packages/protocol/
+	./node_modules/.bin/tslint -p packages/client/ || echo "fail"
+	./node_modules/.bin/tslint -p packages/server/ || echo  "fail"
+	./node_modules/.bin/tslint -p packages/protocol/ || echo "fail"
+	./node_modules/.bin/tslint -p . test/**/*.ts || echo "fail"
 
 .PHONY: proto test build
