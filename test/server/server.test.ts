@@ -29,6 +29,7 @@ describe('server tests', () => {
     httpServer = http.createServer()
     wss = new WebSocket.Server({ server: httpServer })
     commServer = new CommServer(wss)
+    expect(commServer).to.be.ok
   })
 
   after(() => {

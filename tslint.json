@@ -2,5 +2,8 @@
   "extends": [
     "dcl-tslint-config-standard",
     "tslint-no-unused-expression-chai"
-    ]
+  ],
+  "rules": {
+    "no-empty": false
+  }
 }
