@@ -2,10 +2,11 @@ import * as WebSocket from 'ws'
 import { decodeMessageType, sendMessage, MessageType, ChatMessage, PositionMessage, ServerSetupRequestMessage } from 'dcl-comm-protocol'
 
 export interface ClientStrategy {
-  onSetupMessage(ws: WebSocket, message: ServerSetupRequestMessage)
-  onPositionMessage(ws: WebSocket, message: PositionMessage)
-  onChatMessage(ws: WebSocket, message: ChatMessage)
-  onUnsupportedMessage(ws: WebSocket, messageType: MessageType, message)
+  onSetupMessage(client: CommClient, message: ServerSetupRequestMessage)
+  onPositionMessage(client: CommClient, message: PositionMessage)
+  onChatMessage(client: CommClient, message: ChatMessage)
+  onUnsupportedMessage(client: CommClient, messageType: MessageType, message)
+  onSocketError(error)
 }
 
 export class CommClient {
@@ -20,57 +21,87 @@ export class CommClient {
     this.ws.on('message', (msg: Uint8Array) => {
       const msgType = decodeMessageType(msg)
       switch (msgType) {
-        case MessageType.UNKNOWN:
-          self.strategy.onUnsupportedMessage(ws, msgType, msg)
+        case MessageType.UNKNOWN: {
+          self.strategy.onUnsupportedMessage(self, msgType, msg)
           break
-        case MessageType.SERVER_REQUEST_SETUP:
+        }
+        case MessageType.SERVER_REQUEST_SETUP: {
+          let message
           try {
-            const message = ServerSetupRequestMessage.deserializeBinary(msg)
-            self.strategy.onSetupMessage(ws, message)
+            message = ServerSetupRequestMessage.deserializeBinary(msg)
           } catch (e) {
             console.error('cannot deserialize setup message', msg)
           }
+          self.strategy.onSetupMessage(self, message)
           break
-        case MessageType.CHAT:
+        }
+        case MessageType.CHAT: {
+          let message
           try {
-            const message = ChatMessage.deserializeBinary(msg)
-            self.strategy.onChatMessage(ws, message)
+            message = ChatMessage.deserializeBinary(msg)
           } catch (e) {
             console.error('cannot deserialize chat message', msg)
           }
+          self.strategy.onChatMessage(self, message)
           break
-        case MessageType.POSITION:
+        }
+        case MessageType.POSITION: {
+          let message
           try {
-            const message = PositionMessage.deserializeBinary(msg)
-            self.strategy.onPositionMessage(ws, message)
+            message = PositionMessage.deserializeBinary(msg)
           } catch (e) {
             console.error('cannot deserialize position message', e, msg)
           }
+          self.strategy.onPositionMessage(self, message)
           break
-        default:
+        }
+        default: {
           console.log('ignoring message with type', msgType)
           break
+        }
       }
     })
 
-    this.ws.on('error', function open(err) {
-      console.error('CLIENT ERROR', err)
+    this.ws.on('error', err => {
+      console.error('socket error', err)
+      strategy.onSocketError(err)
     })
   }
 
-  // TODO fields
-  public sendPositionMessage(callback) {
-    const m = new PositionMessage()
-    m.setType(MessageType.POSITION)
-
-    sendMessage(this.ws, m, callback)
+  public getStrategy(): ClientStrategy {
+    return this.strategy
   }
 
-  // TODO fields
-  public sendChatMessage(callback) {
+  public sendPositionMessage(
+    positionX: number,
+    positionY: number,
+    rotationX: number,
+    rotationY: number,
+    rotationZ: number,
+    rotationW: number,
+    time?: Date
+  ) {
     const m = new PositionMessage()
-    m.setType(MessageType.CHAT)
+    m.setType(MessageType.POSITION)
+    m.setPositionX(positionX)
+    m.setPositionY(positionY)
+    m.setRotationX(rotationX)
+    m.setRotationY(rotationY)
+    m.setRotationZ(rotationZ)
+    m.setRotationW(rotationW)
+    m.setTime((time ? time : new Date()).getTime())
 
-    sendMessage(this.ws, m, callback)
+    return sendMessage(this.ws, m)
+  }
+
+  public sendChatMessage(positionX: number, positionY: number, text: string, time?: Date) {
+    const m = new ChatMessage()
+    m.setType(MessageType.CHAT)
+    m.setPositionX(positionX)
+    m.setPositionY(positionX)
+    m.setText(text)
+    m.setTime((time ? time : new Date()).getTime())
+
+    return sendMessage(this.ws, m)
   }
 }

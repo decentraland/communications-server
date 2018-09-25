@@ -51,14 +51,29 @@ export class PositionMessage extends jspb.Message {
   getType(): MessageType
   setType(value: MessageType): void
 
-  getX(): number
-  setX(value: number): void
+  getPositionX(): number
+  setPositionX(value: number): void
 
-  getY(): number
-  setY(value: number): void
+  getPositionY(): number
+  setPositionY(value: number): void
+
+  getRotationX(): number
+  setRotationX(value: number): void
+
+  getRotationY(): number
+  setRotationY(value: number): void
+
+  getRotationZ(): number
+  setRotationZ(value: number): void
+
+  getRotationW(): number
+  setRotationW(value: number): void
 
   getTime(): number
   setTime(value: number): void
+
+  getPeerId(): string
+  setPeerId(value: string): void
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): PositionMessage.AsObject
@@ -73,9 +88,14 @@ export class PositionMessage extends jspb.Message {
 export namespace PositionMessage {
   export type AsObject = {
     type: MessageType
-    x: number
-    y: number
+    positionX: number
+    positionY: number
+    rotationX: number
+    rotationY: number
+    rotationZ: number
+    rotationW: number
     time: number
+    peerId: string
   }
 }
 
@@ -83,17 +103,20 @@ export class ChatMessage extends jspb.Message {
   getType(): MessageType
   setType(value: MessageType): void
 
-  getX(): number
-  setX(value: number): void
+  getPositionX(): number
+  setPositionX(value: number): void
 
-  getY(): number
-  setY(value: number): void
+  getPositionY(): number
+  setPositionY(value: number): void
 
   getText(): string
   setText(value: string): void
 
   getTime(): number
   setTime(value: number): void
+
+  getPeerId(): string
+  setPeerId(value: string): void
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): ChatMessage.AsObject
@@ -108,10 +131,11 @@ export class ChatMessage extends jspb.Message {
 export namespace ChatMessage {
   export type AsObject = {
     type: MessageType
-    x: number
-    y: number
+    positionX: number
+    positionY: number
     text: string
     time: number
+    peerId: string
   }
 }
 

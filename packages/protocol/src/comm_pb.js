@@ -345,9 +345,14 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         type: jspb.Message.getFieldWithDefault(msg, 1, 0),
-        x: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
-        y: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
-        time: jspb.Message.getFieldWithDefault(msg, 4, 0)
+        positionX: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
+        positionY: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
+        rotationX: +jspb.Message.getFieldWithDefault(msg, 4, 0.0),
+        rotationY: +jspb.Message.getFieldWithDefault(msg, 5, 0.0),
+        rotationZ: +jspb.Message.getFieldWithDefault(msg, 6, 0.0),
+        rotationW: +jspb.Message.getFieldWithDefault(msg, 7, 0.0),
+        time: jspb.Message.getFieldWithDefault(msg, 8, 0),
+        peerId: jspb.Message.getFieldWithDefault(msg, 9, '')
       }
 
     if (includeInstance) {
@@ -388,15 +393,35 @@ proto.PositionMessage.deserializeBinaryFromReader = function(msg, reader) {
         break
       case 2:
         var value = /** @type {number} */ (reader.readFloat())
-        msg.setX(value)
+        msg.setPositionX(value)
         break
       case 3:
         var value = /** @type {number} */ (reader.readFloat())
-        msg.setY(value)
+        msg.setPositionY(value)
         break
       case 4:
+        var value = /** @type {number} */ (reader.readFloat())
+        msg.setRotationX(value)
+        break
+      case 5:
+        var value = /** @type {number} */ (reader.readFloat())
+        msg.setRotationY(value)
+        break
+      case 6:
+        var value = /** @type {number} */ (reader.readFloat())
+        msg.setRotationZ(value)
+        break
+      case 7:
+        var value = /** @type {number} */ (reader.readFloat())
+        msg.setRotationW(value)
+        break
+      case 8:
         var value = /** @type {number} */ (reader.readUint64())
         msg.setTime(value)
+        break
+      case 9:
+        var value = /** @type {string} */ (reader.readString())
+        msg.setPeerId(value)
         break
       default:
         reader.skipField()
@@ -429,17 +454,37 @@ proto.PositionMessage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(1, f)
   }
-  f = message.getX()
+  f = message.getPositionX()
   if (f !== 0.0) {
     writer.writeFloat(2, f)
   }
-  f = message.getY()
+  f = message.getPositionY()
   if (f !== 0.0) {
     writer.writeFloat(3, f)
   }
+  f = message.getRotationX()
+  if (f !== 0.0) {
+    writer.writeFloat(4, f)
+  }
+  f = message.getRotationY()
+  if (f !== 0.0) {
+    writer.writeFloat(5, f)
+  }
+  f = message.getRotationZ()
+  if (f !== 0.0) {
+    writer.writeFloat(6, f)
+  }
+  f = message.getRotationW()
+  if (f !== 0.0) {
+    writer.writeFloat(7, f)
+  }
   f = message.getTime()
   if (f !== 0) {
-    writer.writeUint64(4, f)
+    writer.writeUint64(8, f)
+  }
+  f = message.getPeerId()
+  if (f.length > 0) {
+    writer.writeString(9, f)
   }
 }
 
@@ -457,42 +502,107 @@ proto.PositionMessage.prototype.setType = function(value) {
 }
 
 /**
- * optional float x = 2;
+ * optional float position_x = 2;
  * @return {number}
  */
-proto.PositionMessage.prototype.getX = function() {
+proto.PositionMessage.prototype.getPositionX = function() {
   return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 2, 0.0))
 }
 
 /** @param {number} value */
-proto.PositionMessage.prototype.setX = function(value) {
+proto.PositionMessage.prototype.setPositionX = function(value) {
   jspb.Message.setProto3FloatField(this, 2, value)
 }
 
 /**
- * optional float y = 3;
+ * optional float position_y = 3;
  * @return {number}
  */
-proto.PositionMessage.prototype.getY = function() {
+proto.PositionMessage.prototype.getPositionY = function() {
   return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 3, 0.0))
 }
 
 /** @param {number} value */
-proto.PositionMessage.prototype.setY = function(value) {
+proto.PositionMessage.prototype.setPositionY = function(value) {
   jspb.Message.setProto3FloatField(this, 3, value)
 }
 
 /**
- * optional uint64 time = 4;
+ * optional float rotation_x = 4;
+ * @return {number}
+ */
+proto.PositionMessage.prototype.getRotationX = function() {
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 4, 0.0))
+}
+
+/** @param {number} value */
+proto.PositionMessage.prototype.setRotationX = function(value) {
+  jspb.Message.setProto3FloatField(this, 4, value)
+}
+
+/**
+ * optional float rotation_y = 5;
+ * @return {number}
+ */
+proto.PositionMessage.prototype.getRotationY = function() {
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 5, 0.0))
+}
+
+/** @param {number} value */
+proto.PositionMessage.prototype.setRotationY = function(value) {
+  jspb.Message.setProto3FloatField(this, 5, value)
+}
+
+/**
+ * optional float rotation_z = 6;
+ * @return {number}
+ */
+proto.PositionMessage.prototype.getRotationZ = function() {
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 6, 0.0))
+}
+
+/** @param {number} value */
+proto.PositionMessage.prototype.setRotationZ = function(value) {
+  jspb.Message.setProto3FloatField(this, 6, value)
+}
+
+/**
+ * optional float rotation_w = 7;
+ * @return {number}
+ */
+proto.PositionMessage.prototype.getRotationW = function() {
+  return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 7, 0.0))
+}
+
+/** @param {number} value */
+proto.PositionMessage.prototype.setRotationW = function(value) {
+  jspb.Message.setProto3FloatField(this, 7, value)
+}
+
+/**
+ * optional uint64 time = 8;
  * @return {number}
  */
 proto.PositionMessage.prototype.getTime = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0))
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0))
 }
 
 /** @param {number} value */
 proto.PositionMessage.prototype.setTime = function(value) {
-  jspb.Message.setProto3IntField(this, 4, value)
+  jspb.Message.setProto3IntField(this, 8, value)
+}
+
+/**
+ * optional string peer_id = 9;
+ * @return {string}
+ */
+proto.PositionMessage.prototype.getPeerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ''))
+}
+
+/** @param {string} value */
+proto.PositionMessage.prototype.setPeerId = function(value) {
+  jspb.Message.setProto3StringField(this, 9, value)
 }
 
 /**
@@ -541,10 +651,11 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         type: jspb.Message.getFieldWithDefault(msg, 1, 0),
-        x: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
-        y: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
+        positionX: +jspb.Message.getFieldWithDefault(msg, 2, 0.0),
+        positionY: +jspb.Message.getFieldWithDefault(msg, 3, 0.0),
         text: jspb.Message.getFieldWithDefault(msg, 4, ''),
-        time: jspb.Message.getFieldWithDefault(msg, 5, 0)
+        time: jspb.Message.getFieldWithDefault(msg, 5, 0),
+        peerId: jspb.Message.getFieldWithDefault(msg, 6, '')
       }
 
     if (includeInstance) {
@@ -585,11 +696,11 @@ proto.ChatMessage.deserializeBinaryFromReader = function(msg, reader) {
         break
       case 2:
         var value = /** @type {number} */ (reader.readFloat())
-        msg.setX(value)
+        msg.setPositionX(value)
         break
       case 3:
         var value = /** @type {number} */ (reader.readFloat())
-        msg.setY(value)
+        msg.setPositionY(value)
         break
       case 4:
         var value = /** @type {string} */ (reader.readString())
@@ -598,6 +709,10 @@ proto.ChatMessage.deserializeBinaryFromReader = function(msg, reader) {
       case 5:
         var value = /** @type {number} */ (reader.readUint64())
         msg.setTime(value)
+        break
+      case 6:
+        var value = /** @type {string} */ (reader.readString())
+        msg.setPeerId(value)
         break
       default:
         reader.skipField()
@@ -630,11 +745,11 @@ proto.ChatMessage.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(1, f)
   }
-  f = message.getX()
+  f = message.getPositionX()
   if (f !== 0.0) {
     writer.writeFloat(2, f)
   }
-  f = message.getY()
+  f = message.getPositionY()
   if (f !== 0.0) {
     writer.writeFloat(3, f)
   }
@@ -645,6 +760,10 @@ proto.ChatMessage.serializeBinaryToWriter = function(message, writer) {
   f = message.getTime()
   if (f !== 0) {
     writer.writeUint64(5, f)
+  }
+  f = message.getPeerId()
+  if (f.length > 0) {
+    writer.writeString(6, f)
   }
 }
 
@@ -662,28 +781,28 @@ proto.ChatMessage.prototype.setType = function(value) {
 }
 
 /**
- * optional float x = 2;
+ * optional float position_x = 2;
  * @return {number}
  */
-proto.ChatMessage.prototype.getX = function() {
+proto.ChatMessage.prototype.getPositionX = function() {
   return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 2, 0.0))
 }
 
 /** @param {number} value */
-proto.ChatMessage.prototype.setX = function(value) {
+proto.ChatMessage.prototype.setPositionX = function(value) {
   jspb.Message.setProto3FloatField(this, 2, value)
 }
 
 /**
- * optional float y = 3;
+ * optional float position_y = 3;
  * @return {number}
  */
-proto.ChatMessage.prototype.getY = function() {
+proto.ChatMessage.prototype.getPositionY = function() {
   return /** @type {number} */ (+jspb.Message.getFieldWithDefault(this, 3, 0.0))
 }
 
 /** @param {number} value */
-proto.ChatMessage.prototype.setY = function(value) {
+proto.ChatMessage.prototype.setPositionY = function(value) {
   jspb.Message.setProto3FloatField(this, 3, value)
 }
 
@@ -711,6 +830,19 @@ proto.ChatMessage.prototype.getTime = function() {
 /** @param {number} value */
 proto.ChatMessage.prototype.setTime = function(value) {
   jspb.Message.setProto3IntField(this, 5, value)
+}
+
+/**
+ * optional string peer_id = 6;
+ * @return {string}
+ */
+proto.ChatMessage.prototype.getPeerId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ''))
+}
+
+/** @param {string} value */
+proto.ChatMessage.prototype.setPeerId = function(value) {
+  jspb.Message.setProto3StringField(this, 6, value)
 }
 
 /**

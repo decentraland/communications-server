@@ -25,7 +25,8 @@ describe('client tests', () => {
       onSetupMessage: sinon.stub(),
       onPositionMessage: sinon.stub(),
       onChatMessage: sinon.stub(),
-      onUnsupportedMessage: sinon.stub()
+      onUnsupportedMessage: sinon.stub(),
+      onSocketError: sinon.stub()
     } as ClientStrategy
 
     client = new CommClient(ws, strategy)
@@ -35,34 +36,30 @@ describe('client tests', () => {
     const m = buildSetupMessage(10)
 
     ws.emit('message', m.serializeBinary())
-    expect(strategy.onSetupMessage).to.have.been.calledWith(ws, m)
+    expect(strategy.onSetupMessage).to.have.been.calledWith(client, m)
   })
 
   it('should handle position message', () => {
     const m = buildPositionMessage(1.5, 1.5)
 
     ws.emit('message', m.serializeBinary())
-    expect(strategy.onPositionMessage).to.have.been.calledWith(ws, m)
+    expect(strategy.onPositionMessage).to.have.been.calledWith(client, m)
   })
 
   it('should handle chat message', () => {
     const m = buildChatMessage(1.5, 1.5, 'hello')
 
     ws.emit('message', m.serializeBinary())
-    expect(strategy.onChatMessage).to.have.been.calledWith(ws, m)
+    expect(strategy.onChatMessage).to.have.been.calledWith(client, m)
   })
 
-  it('should send a position message', done => {
-    client.sendPositionMessage(err => {
-      expect(ws.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.POSITION))
-      done(err)
-    })
+  it('should send a position message', async () => {
+    await client.sendPositionMessage()
+    expect(ws.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.POSITION))
   })
 
-  it('should send a chat message', done => {
-    client.sendChatMessage(err => {
-      expect(ws.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
-      done(err)
-    })
+  it('should send a chat message', async () => {
+    await client.sendChatMessage()
+    expect(ws.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
   })
 })

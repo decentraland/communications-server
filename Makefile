@@ -42,8 +42,14 @@ test: build
 
 lint:
 	./node_modules/.bin/tslint -p packages/client/ || echo "fail"
-	./node_modules/.bin/tslint -p packages/server/ || echo  "fail"
+	./node_modules/.bin/tslint -p packages/server/ || echo "fail"
 	./node_modules/.bin/tslint -p packages/protocol/ || echo "fail"
 	./node_modules/.bin/tslint -p . test/**/*.ts || echo "fail"
 
-.PHONY: proto test build
+lintci:
+	./node_modules/.bin/tslint -p packages/client/
+	./node_modules/.bin/tslint -p packages/server/
+	./node_modules/.bin/tslint -p packages/protocol/
+	./node_modules/.bin/tslint -p . test/**/*.ts
+
+.PHONY: proto clean link test build lint lintci

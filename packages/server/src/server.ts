@@ -29,7 +29,8 @@ const logger = bunyan.createLogger({
 // TODO move the options to a config file or something
 const options = {
   updatesPerSecond: 10,
-  communicationRadius: 10
+  communicationRadius: 10,
+  communicationRadiusTolerance: 2
 }
 
 export class CommServer {
@@ -95,15 +96,17 @@ export class CommServer {
   protected onPositionMessage(ws: EnrichedWebSocket, message: PositionMessage) {
     const msgTimestamp = message.getTime()
     if (!ws.lastPositionUpdate || ws.lastPositionUpdate < msgTimestamp) {
-      ws.position = new V2(Math.trunc(message.getX()), Math.trunc(message.getY()))
+      ws.position = new V2(Math.trunc(message.getPositionX()), Math.trunc(message.getPositionY()))
     }
 
     if (msgTimestamp > 0) {
+      message.setPeerId(ws.id)
       this.broadcast(ws, message)
     }
   }
 
   protected onChatMessage(ws: EnrichedWebSocket, message: ChatMessage) {
+    message.setPeerId(ws.id)
     this.broadcast(ws, message)
   }
 
@@ -126,25 +129,28 @@ export class CommServer {
     }
     const bytes = msg.serializeBinary()
 
-    if (ws.position) {
-      const commArea = new CommunicationArea(ws.position, options.communicationRadius)
-      const totalClients = this.wss.clients.size
-      let clientsReached = 0
-
-      // TODO: metric time spent in this loop
-      this.wss.clients.forEach((client: EnrichedWebSocket) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
-          clientsReached++
-          client.send(bytes, err => {
-            if (err) {
-              // TODO: should be do something else here?
-              logger.error({ err: err, id: client.id, msgType }, 'error sending to client')
-            }
-          })
-        }
-      })
-
-      // TODO metric clientsReached/totalClients ratio
+    if (!ws.position) {
+      return
     }
+
+    const commArea = new CommunicationArea(ws.position, options.communicationRadius + options.communicationRadiusTolerance)
+    const totalClients = this.wss.clients.size
+    let attemptToReach = 0
+
+    // TODO: metric time spent in this loop
+    this.wss.clients.forEach((client: EnrichedWebSocket) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
+        attemptToReach++
+        client.send(bytes, err => {
+          if (err) {
+            // TODO: should be do something else here?
+            logger.error({ err: err, id: client.id, msgType }, 'error sending to client')
+          }
+        })
+      }
+    })
+
+    // TODO metric attemptToReach/totalClients ratio
+    console.log(`total clients: ${totalClients}, attempt to reach: ${attemptToReach}`)
   }
 }

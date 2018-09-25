@@ -18,15 +18,21 @@ message ServerSetupRequestMessage {
 
 message PositionMessage {
     MessageType type = 1;
-    float x = 2;
-    float y = 3;
-    uint64 time = 4;
+    float position_x = 2;
+    float position_y = 3;
+    float rotation_x = 4;
+    float rotation_y = 5;
+    float rotation_z = 6;
+    float rotation_w = 7;
+    uint64 time = 8;
+    string peer_id = 9;
 }
 
 message ChatMessage {
     MessageType type = 1;
-    float x = 2;
-    float y = 3;
+    float position_x = 2;
+    float position_y = 3;
     string text = 4;
     uint64 time = 5;
+    string peer_id = 6;
 }

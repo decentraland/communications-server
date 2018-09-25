@@ -9,13 +9,21 @@ export function decodeMessageType(msg: Uint8Array) {
   }
 }
 
-export function sendMessage(ws: WebSocket, msg, callback?) {
+export function sendMessage(ws: WebSocket, msg) {
   const genericMessage = msg as GenericMessage
   if (genericMessage.getType() === MessageType.UNKNOWN) {
     throw Error('cannot send a message without a type')
   }
   const bytes = msg.serializeBinary()
-  ws.send(bytes, callback)
+
+  return new Promise((resolve, reject) => {
+    ws.send(bytes, err => {
+      if (err) {
+        return reject(err)
+      }
+      resolve()
+    })
+  })
 }
 
 export * from './comm_pb'

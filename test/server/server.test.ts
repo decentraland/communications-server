@@ -146,7 +146,7 @@ describe('server tests', () => {
       expect(ws1.position).to.deep.equal(new V2(1, 1))
       expect(ws2.position).to.deep.equal(new V2(2, 2))
 
-      expect(ws1.send).to.have.been.calledWith(ws2Location)
+      expect(ws1.send).to.have.been.calledWith(messageTypeMatcher(MessageType.POSITION))
       expect(ws2.send).to.have.not.been.called
     })
 
@@ -187,8 +187,8 @@ describe('server tests', () => {
         const ws2Chat = buildChatMessage(2, 2, 'text').serializeBinary()
         ws2.emit('message', ws2Chat)
 
-        expect(ws1.send).to.have.been.calledOnceWith(ws2Chat)
-        expect(ws2.send).to.have.been.calledOnceWith(ws1Chat)
+        expect(ws1.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
+        expect(ws2.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
       })
 
       it('should broadcast chat messages even if the position describe in the messsage is outside of the comm radius', () => {
@@ -201,8 +201,8 @@ describe('server tests', () => {
         // NOTE: we don't change positions using the chat message
         expect(ws1.position).to.deep.equal(new V2(1, 1))
 
-        expect(ws1.send).to.have.been.calledOnceWith(ws2Chat)
-        expect(ws2.send).to.have.been.calledOnceWith(ws1Chat)
+        expect(ws1.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
+        expect(ws2.send).to.have.been.calledOnceWith(messageTypeMatcher(MessageType.CHAT))
       })
     })
   })
