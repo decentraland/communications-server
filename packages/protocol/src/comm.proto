@@ -1,32 +1,45 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 enum MessageType {
   UNKNOWN = 0;
-  SETUP = 1;
+  SERVER_REQUEST_SETUP = 1;
   POSITION = 2;
   CHAT = 3;
+  CLIENT_DISCONNECTED_FROM_SERVER = 4;
 }
 
 message GenericMessage {
     MessageType type = 1;
 }
 
-message SetupMessage {
+message ServerSetupRequestMessage {
     MessageType type = 1;
     uint32 updates_per_second = 2;
 }
 
 message PositionMessage {
     MessageType type = 1;
-    int32 x = 2;
-    int32 y = 3;
-    google.protobuf.Timestamp time = 4;
+    float position_x = 2;
+    float position_y = 3;
+    float rotation_x = 4;
+    float rotation_y = 5;
+    float rotation_z = 6;
+    float rotation_w = 7;
+    double time = 8;
+    string peer_id = 9;
 }
 
 message ChatMessage {
     MessageType type = 1;
-    PositionMessage position = 2;
-    string text = 3;
+    float position_x = 2;
+    float position_y = 3;
+    string text = 4;
+    double time = 5;
+    string peer_id = 6;
+}
+
+message ClientDisconnectedFromServerMessage {
+    MessageType type = 1;
+    double time = 2;
+    string peer_id = 3;
 }

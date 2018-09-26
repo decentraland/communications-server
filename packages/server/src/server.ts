@@ -1,14 +1,59 @@
-import * as WebSocket from 'ws'
-import { decodeMessageType, sendMessage, GenericMessage, MessageType, ChatMessage, SetupMessage, PositionMessage } from 'dcl-comm-protocol'
+// Open questions:
+// Esteban suggested that ProtocolBuffer in js is not the best alternative (he
+// used protobufjs), apparently he had memory issues before: he suggested to use
+// json + gzip instead
 
-const options = {
-  updatesPerSecond: 10
+import * as WebSocket from 'ws'
+import * as uuid from 'uuid/v4'
+import { EnrichedWebSocket, V2, CommunicationArea } from './utils'
+import {
+  decodeMessageType,
+  sendMessage,
+  GenericMessage,
+  MessageType,
+  ChatMessage,
+  PositionMessage,
+  ClientDisconnectedFromServerMessage,
+  ServerSetupRequestMessage
+} from 'dcl-comm-protocol'
+
+import { logger } from './logger'
+import { settings } from './settings'
+
+process.on('uncaughtException', err => {
+  logger.error({ err }, 'Uncaught exception')
+})
+
+function logSocketEvent(ws: EnrichedWebSocket, event: string, error?: Error) {
+  const id = ws.id
+  if (error) {
+    logger.error({ err: error, id, event: event }, 'Socket error')
+  } else {
+    logger.info({ id, event: event }, 'Socket event')
+  }
 }
 
-// TODO proper logging
-// TODO should we add a id to the websocket? should the websocket send one to us
-// or should we provide one in the setup? in the client we have a peer id but I think that's random
-// TODO if we add a ws id we should include that in the logs
+function debugSocketMessageEvent(ws: EnrichedWebSocket, msgType: MessageType, event: string, msgTypeName?: string) {
+  const id = ws.id
+  const payload = { id, event, msgType }
+
+  if (msgTypeName) {
+    payload['msgTypeName'] = msgTypeName
+  }
+
+  logger.debug(payload, 'Socket message event')
+}
+
+function errorSocketMessageEvent(ws: EnrichedWebSocket, msgType: MessageType, event: string, error: Error, msgTypeName?: string) {
+  const id = ws.id
+  const payload = { err: error, id, event, msgType }
+
+  if (msgTypeName) {
+    payload['msgTypeName'] = msgTypeName
+  }
+
+  logger.error(payload, 'Socket message error')
+}
 
 export class CommServer {
   private wss: WebSocket.Server
@@ -17,40 +62,66 @@ export class CommServer {
     const self = this
     this.wss = wss
 
-    this.wss.on('connection', (ws: WebSocket) => {
+    this.wss.on('connection', (ws: EnrichedWebSocket) => {
+      const id = uuid()
+      ws.id = id
       self.sendSetupMessage(ws)
+
+      logSocketEvent(ws, 'connected')
 
       ws.on('message', (msg: Uint8Array) => {
         const msgType = decodeMessageType(msg)
+        debugSocketMessageEvent(ws, msgType, 'dispatching')
         switch (msgType) {
-          case MessageType.UNKNOWN:
-            self.onUnsupportedMessage(ws, msgType, msg)
+          case MessageType.UNKNOWN: {
+            self.onUnknownMessage(ws, msgType, msg)
             break
-          case MessageType.CHAT:
+          }
+          case MessageType.CHAT: {
+            let message
             try {
-              const message = ChatMessage.deserializeBinary(msg)
-              self.onChatMessage(ws, message)
+              message = ChatMessage.deserializeBinary(msg)
             } catch (e) {
-              console.error('cannot deserialize chat message', msg)
+              errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'chat')
             }
+            self.onChatMessage(ws, message)
             break
-          case MessageType.POSITION:
+          }
+          case MessageType.POSITION: {
+            let message
             try {
-              const message = ChatMessage.deserializeBinary(msg)
-              self.onChatMessage(ws, message)
+              message = PositionMessage.deserializeBinary(msg)
             } catch (e) {
-              console.error('cannot deserialize position message', msg)
+              errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'position')
             }
+            self.onPositionMessage(ws, message)
             break
-          default:
-            console.log('ignoring message with type', msgType)
+          }
+          default: {
+            debugSocketMessageEvent(ws, msgType, 'ignore_message')
             break
+          }
         }
+      })
+
+      ws.on('error', err => {
+        logSocketEvent(ws, 'error', err)
+      })
+
+      ws.on('close', () => {
+        logSocketEvent(ws, 'closed')
+
+        const msg = new ClientDisconnectedFromServerMessage()
+        msg.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
+        msg.setPeerId(ws.id)
+        msg.setTime(new Date().getTime())
+        self.broadcast(ws, msg)
       })
     })
 
-    this.wss.on('error', function open(err) {
-      console.log('SERVER ERROR', err)
+    this.wss.on('error', err => {
+      // TODO: handle this
+      logger.error({ err }, 'websocket server error')
     })
   }
 
@@ -58,36 +129,75 @@ export class CommServer {
     this.wss.close()
   }
 
-  protected onPositionMessage(ws: WebSocket, message: PositionMessage) {
+  protected onPositionMessage(ws: EnrichedWebSocket, message: PositionMessage) {
+    debugSocketMessageEvent(ws, MessageType.POSITION, 'processing', 'position')
+    const msgTimestamp = message.getTime()
+    if (!ws.lastPositionUpdate || ws.lastPositionUpdate < msgTimestamp) {
+      ws.position = new V2(Math.trunc(message.getPositionX()), Math.trunc(message.getPositionY()))
+    }
+
+    if (msgTimestamp > 0) {
+      // TODO: I'm hoping to get this from the ephemeral key, since it has to be uniq across all the servers
+      message.setPeerId(ws.id)
+      this.broadcast(ws, message)
+    }
+  }
+
+  protected onChatMessage(ws: EnrichedWebSocket, message: ChatMessage) {
+    debugSocketMessageEvent(ws, MessageType.CHAT, 'processing', 'chat')
+    message.setPeerId(ws.id)
     this.broadcast(ws, message)
   }
 
-  protected onChatMessage(ws: WebSocket, message: ChatMessage) {
-    this.broadcast(ws, message)
-  }
-
-  protected onUnsupportedMessage(ws: WebSocket, messageType: MessageType, message) {
-    console.log('unsupported message', messageType, message)
+  protected onUnknownMessage(ws: EnrichedWebSocket, messageType: MessageType, message) {
+    debugSocketMessageEvent(ws, MessageType.UNKNOWN, 'processing', 'unknown')
   }
 
   protected sendSetupMessage(ws: WebSocket) {
-    const message = new SetupMessage()
-    message.setType(MessageType.SETUP)
-    message.setUpdatesPerSecond(options.updatesPerSecond)
+    const message = new ServerSetupRequestMessage()
+    message.setType(MessageType.SERVER_REQUEST_SETUP)
+    message.setUpdatesPerSecond(settings.updatesPerSecond)
     sendMessage(ws, message)
   }
 
-  private broadcast(ws: WebSocket, msg) {
+  private broadcast(ws: EnrichedWebSocket, msg) {
     const genericMessage = msg as GenericMessage
-    if (!genericMessage.getType()) {
+    const msgType = genericMessage.getType()
+    if (genericMessage.getType() === MessageType.UNKNOWN) {
       throw Error('cannot send a message without a type')
     }
     const bytes = msg.serializeBinary()
 
-    this.wss.clients.forEach(client => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(bytes)
+    if (!ws.position) {
+      debugSocketMessageEvent(ws, msgType, 'skip_broadcast')
+      return
+    }
+
+    const commArea = new CommunicationArea(ws.position, settings.communicationRadius + settings.communicationRadiusTolerance)
+    const totalClients = this.wss.clients.size
+    let attemptToReach = 0
+
+    const loopStart = new Date()
+    this.wss.clients.forEach((client: EnrichedWebSocket) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
+        attemptToReach++
+        client.send(bytes, err => {
+          // TODO: metric increment success/error
+          if (err) {
+            logger.error({ err: err, id: client.id, msgType, event: 'send_message' }, 'error sending to client')
+          }
+        })
       }
     })
+
+    // TODO metric
+    const loopDurationMs = new Date().getTime() - loopStart.getTime()
+    logger.info({ loopDurationMs }, 'loop duration')
+
+    // TODO metric
+    const broadcastRatio = totalClients === 0 ? 1 : attemptToReach / totalClients
+    logger.info({ event: 'broadcast', totalClients, attemptToReach, broadcastRatio }, 'broadcast')
+
+    debugSocketMessageEvent(ws, msgType, 'broadcast_complete')
   }
 }
