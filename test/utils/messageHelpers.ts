@@ -1,5 +1,12 @@
 import * as sinon from 'sinon'
-import { decodeMessageType, MessageType, ChatMessage, ServerSetupRequestMessage, PositionMessage } from 'dcl-comm-protocol'
+import {
+  decodeMessageType,
+  MessageType,
+  ChatMessage,
+  ServerSetupRequestMessage,
+  PositionMessage,
+  ClientDisconnectedFromServerMessage
+} from 'dcl-comm-protocol'
 
 export function messageTypeMatcher(typeToMatch) {
   return sinon.match(msg => {
@@ -31,5 +38,13 @@ export function buildSetupMessage(updatesPerSecond: number) {
   const m = new ServerSetupRequestMessage()
   m.setType(MessageType.SERVER_REQUEST_SETUP)
   m.setUpdatesPerSecond(updatesPerSecond)
+  return m
+}
+
+export function buildClientDisconnectedFromServerMessage(peerId: string, time?: Date) {
+  const m = new ClientDisconnectedFromServerMessage()
+  m.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
+  m.setPeerId(peerId)
+  m.setTime((time ? time : new Date()).getTime())
   return m
 }

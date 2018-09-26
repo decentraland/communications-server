@@ -3,7 +3,13 @@ import * as chai from 'chai'
 import { ClientStrategy, CommClient } from 'dcl-comm-client'
 import * as WebSocket from 'ws'
 import { MessageType } from 'dcl-comm-protocol'
-import { messageTypeMatcher, buildSetupMessage, buildPositionMessage, buildChatMessage } from '../utils/messageHelpers'
+import {
+  messageTypeMatcher,
+  buildSetupMessage,
+  buildPositionMessage,
+  buildChatMessage,
+  buildClientDisconnectedFromServerMessage
+} from '../utils/messageHelpers'
 
 import * as sinon from 'sinon'
 import * as sinonChai from 'sinon-chai'
@@ -21,12 +27,15 @@ describe('client tests', () => {
     ws = new EventEmitter() as WebSocket
     ws.send = sinon.stub().yields()
 
+    console.log('x')
+
     strategy = {
       onSetupMessage: sinon.stub(),
       onPositionMessage: sinon.stub(),
       onChatMessage: sinon.stub(),
       onUnsupportedMessage: sinon.stub(),
-      onSocketError: sinon.stub()
+      onSocketError: sinon.stub(),
+      onClientDisconnectedFromServerMessage: sinon.stub()
     } as ClientStrategy
 
     client = new CommClient(ws, strategy)
@@ -51,6 +60,13 @@ describe('client tests', () => {
 
     ws.emit('message', m.serializeBinary())
     expect(strategy.onChatMessage).to.have.been.calledWith(client, m)
+  })
+
+  it('should handle client disconnected from server message', () => {
+    const m = buildClientDisconnectedFromServerMessage('c1')
+
+    ws.emit('message', m.serializeBinary())
+    expect(strategy.onClientDisconnectedFromServerMessage).to.have.been.calledWith(client, m)
   })
 
   it('should send a position message', async () => {

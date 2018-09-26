@@ -10,9 +10,9 @@ jobs:
       - checkout
 
       # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/client/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/client/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
 
       - run: make installci
 
