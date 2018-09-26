@@ -24,6 +24,6 @@ jobs:
             - packages/protocol/node_modules
           key: v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/client/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
 
-      - run: make devlink
+      - run: make devlink GLOBAL_LINK_PREFIX=sudo
 
       - run: make test

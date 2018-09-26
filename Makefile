@@ -1,3 +1,5 @@
+LINK_PREFIX ?= ""
+
 proto:
 	cd ./packages/protocol/; ${PROTOC} \
 		--plugin="protoc-gen-ts=./node_modules/.bin/protoc-gen-ts" \
@@ -9,9 +11,9 @@ clean:
 	rm -r ./packages/server/node_modules ./packages/protocol/node_modules ./packages/client/node_modules node_modules
 
 link:
-	cd ./packages/server; npm link
-	cd ./packages/protocol; npm link
-	cd ./packages/client; npm link
+	cd ./packages/server; $(GLOBAL_LINK_PREFIX) npm link
+	cd ./packages/protocol; $(GLOBAL_LINK_PREFIX) npm link
+	cd ./packages/client; $(GLOBAL_LINK_PREFIX) npm link
 
 devlink: link
 	cd ./packages/server; npm link dcl-comm-protocol
