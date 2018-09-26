@@ -12,7 +12,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/client/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
+          - v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
 
       - run: make installci
 
@@ -20,9 +20,8 @@ jobs:
           paths:
             - node_modules
             - packages/server/node_modules
-            - packages/client/node_modules
             - packages/protocol/node_modules
-          key: v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/client/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
+          key: v1-dependencies-{{ checksum "package-lock.json" }}-{{ checksum "packages/server/package-lock.json" }}-{{ checksum "packages/protocol/package-lock.json" }}
 
       - run: make devlink GLOBAL_LINK_PREFIX=sudo
 
