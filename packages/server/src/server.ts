@@ -15,6 +15,7 @@ import {
   MessageType,
   ChatMessage,
   PositionMessage,
+  ClientDisconnectedFromServerMessage,
   ServerSetupRequestMessage
 } from 'dcl-comm-protocol'
 
@@ -44,6 +45,9 @@ export class CommServer {
       const id = uuid()
       ws.id = id
       self.sendSetupMessage(ws)
+
+      const logPayload = { id, event: 'connected' }
+      logger.info(logPayload, 'Socket connected')
 
       ws.on('message', (msg: Uint8Array) => {
         const msgType = decodeMessageType(msg)
@@ -81,6 +85,22 @@ export class CommServer {
           }
         }
       })
+
+      ws.on('error', err => {
+        const logPayload = { err, id }
+        logger.error(logPayload, 'Socket error')
+      })
+
+      ws.on('close', () => {
+        const logPayload = { id, event: 'closed' }
+        logger.info(logPayload, 'Socket closed')
+
+        const msg = new ClientDisconnectedFromServerMessage()
+        msg.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
+        msg.setPeerId(ws.id)
+        msg.setTime(new Date().getTime())
+        self.broadcast(ws, msg)
+      })
     })
 
     this.wss.on('error', err => {
@@ -100,6 +120,7 @@ export class CommServer {
     }
 
     if (msgTimestamp > 0) {
+      // TODO: I'm hoping to get this from the ephemeral key, since it has to be uniq across all the servers
       message.setPeerId(ws.id)
       this.broadcast(ws, message)
     }

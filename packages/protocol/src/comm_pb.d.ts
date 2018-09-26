@@ -139,9 +139,41 @@ export namespace ChatMessage {
   }
 }
 
+export class ClientDisconnectedFromServerMessage extends jspb.Message {
+  getType(): MessageType
+  setType(value: MessageType): void
+
+  getTime(): number
+  setTime(value: number): void
+
+  getPeerId(): string
+  setPeerId(value: string): void
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): ClientDisconnectedFromServerMessage.AsObject
+  static toObject(includeInstance: boolean, msg: ClientDisconnectedFromServerMessage): ClientDisconnectedFromServerMessage.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(message: ClientDisconnectedFromServerMessage, writer: jspb.BinaryWriter): void
+  static deserializeBinary(bytes: Uint8Array): ClientDisconnectedFromServerMessage
+  static deserializeBinaryFromReader(
+    message: ClientDisconnectedFromServerMessage,
+    reader: jspb.BinaryReader
+  ): ClientDisconnectedFromServerMessage
+}
+
+export namespace ClientDisconnectedFromServerMessage {
+  export type AsObject = {
+    type: MessageType
+    time: number
+    peerId: string
+  }
+}
+
 export enum MessageType {
   UNKNOWN = 0,
   SERVER_REQUEST_SETUP = 1,
   POSITION = 2,
-  CHAT = 3
+  CHAT = 3,
+  CLIENT_DISCONNECTED_FROM_SERVER = 4
 }

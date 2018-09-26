@@ -1,10 +1,19 @@
 import * as WebSocket from 'ws'
-import { decodeMessageType, sendMessage, MessageType, ChatMessage, PositionMessage, ServerSetupRequestMessage } from 'dcl-comm-protocol'
+import {
+  decodeMessageType,
+  sendMessage,
+  MessageType,
+  ChatMessage,
+  PositionMessage,
+  ServerSetupRequestMessage,
+  ClientDisconnectedFromServerMessage
+} from 'dcl-comm-protocol'
 
 export interface ClientStrategy {
   onSetupMessage(client: CommClient, message: ServerSetupRequestMessage)
   onPositionMessage(client: CommClient, message: PositionMessage)
   onChatMessage(client: CommClient, message: ChatMessage)
+  onClientDisconnectedFromServerMessage(client: CommClient, message: ClientDisconnectedFromServerMessage)
   onUnsupportedMessage(client: CommClient, messageType: MessageType, message)
   onSocketError(error)
 }
@@ -55,6 +64,16 @@ export class CommClient {
           self.strategy.onPositionMessage(self, message)
           break
         }
+        case MessageType.CLIENT_DISCONNECTED_FROM_SERVER: {
+          let message
+          try {
+            message = ClientDisconnectedFromServerMessage.deserializeBinary(msg)
+          } catch (e) {
+            console.error('cannot deserialize client disconnected message', e, msg)
+          }
+          self.strategy.onClientDisconnectedFromServerMessage(self, message)
+          break
+        }
         default: {
           console.log('ignoring message with type', msgType)
           break
@@ -66,6 +85,10 @@ export class CommClient {
       console.error('socket error', err)
       strategy.onSocketError(err)
     })
+  }
+
+  public close() {
+    this.ws.close()
   }
 
   public getStrategy(): ClientStrategy {

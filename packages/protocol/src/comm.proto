@@ -5,6 +5,7 @@ enum MessageType {
   SERVER_REQUEST_SETUP = 1;
   POSITION = 2;
   CHAT = 3;
+  CLIENT_DISCONNECTED_FROM_SERVER = 4;
 }
 
 message GenericMessage {
@@ -35,4 +36,10 @@ message ChatMessage {
     string text = 4;
     double time = 5;
     string peer_id = 6;
+}
+
+message ClientDisconnectedFromServerMessage {
+    MessageType type = 1;
+    double time = 2;
+    string peer_id = 3;
 }
