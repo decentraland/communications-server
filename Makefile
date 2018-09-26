@@ -22,6 +22,13 @@ devlink: link
 	npm link dcl-comm-server
 	npm link dcl-comm-client
 
+# to take advantage of the circleci cache let's only install if node_modules doesn't exist
+installci:
+	if [ ! -d "node_modules" ]; then npm ci; fi
+	if [ ! -d "./packages/server/node_modules" ]; then cd ./packages/server/; npm ci; fi
+	if [ ! -d "./packages/client/node_modules" ]; then cd ./packages/client/; npm ci; fi
+	if [ ! -d "./packages/protocol/node_modules" ]; then cd ./packages/protocol/; npm ci; fi
+
 install:
 	npm i
 	cd ./packages/server; npm i
