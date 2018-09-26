@@ -3,8 +3,6 @@
 // used protobufjs), apparently he had memory issues before: he suggested to use
 // json + gzip instead
 
-// TODO handle uncaught errors
-
 import * as WebSocket from 'ws'
 import * as uuid from 'uuid/v4'
 import { EnrichedWebSocket, V2, CommunicationArea } from './utils'
@@ -19,19 +17,42 @@ import {
   ServerSetupRequestMessage
 } from 'dcl-comm-protocol'
 
-import * as bunyan from 'bunyan'
+import { logger } from './logger'
+import { settings } from './settings'
 
-// TODO proper logging configuration
-const logger = bunyan.createLogger({
-  name: 'dcl-communication-server',
-  serializers: bunyan.stdSerializers
+process.on('uncaughtException', err => {
+  logger.error({ err }, 'Uncaught exception')
 })
 
-// TODO move the options to a config file or something
-const options = {
-  updatesPerSecond: 10,
-  communicationRadius: 10,
-  communicationRadiusTolerance: 2
+function logSocketEvent(ws: EnrichedWebSocket, event: string, error?: Error) {
+  const id = ws.id
+  if (error) {
+    logger.error({ err: error, id, event: event }, 'Socket error')
+  } else {
+    logger.info({ id, event: event }, 'Socket event')
+  }
+}
+
+function debugSocketMessageEvent(ws: EnrichedWebSocket, msgType: MessageType, event: string, msgTypeName?: string) {
+  const id = ws.id
+  const payload = { id, event, msgType }
+
+  if (msgTypeName) {
+    payload['msgTypeName'] = msgTypeName
+  }
+
+  logger.debug(payload, 'Socket message event')
+}
+
+function errorSocketMessageEvent(ws: EnrichedWebSocket, msgType: MessageType, event: string, error: Error, msgTypeName?: string) {
+  const id = ws.id
+  const payload = { err: error, id, event, msgType }
+
+  if (msgTypeName) {
+    payload['msgTypeName'] = msgTypeName
+  }
+
+  logger.error(payload, 'Socket message error')
 }
 
 export class CommServer {
@@ -46,14 +67,14 @@ export class CommServer {
       ws.id = id
       self.sendSetupMessage(ws)
 
-      const logPayload = { id, event: 'connected' }
-      logger.info(logPayload, 'Socket connected')
+      logSocketEvent(ws, 'connected')
 
       ws.on('message', (msg: Uint8Array) => {
         const msgType = decodeMessageType(msg)
+        debugSocketMessageEvent(ws, msgType, 'dispatching')
         switch (msgType) {
           case MessageType.UNKNOWN: {
-            self.onUnsupportedMessage(ws, msgType, msg)
+            self.onUnknownMessage(ws, msgType, msg)
             break
           }
           case MessageType.CHAT: {
@@ -61,8 +82,7 @@ export class CommServer {
             try {
               message = ChatMessage.deserializeBinary(msg)
             } catch (e) {
-              const logPayload = { err: e, id, msg, msgType, msgTypeName: 'chat' }
-              logger.error(logPayload, 'Cannot deserialize message')
+              errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'chat')
             }
             self.onChatMessage(ws, message)
             break
@@ -72,28 +92,24 @@ export class CommServer {
             try {
               message = PositionMessage.deserializeBinary(msg)
             } catch (e) {
-              const logPayload = { err: e, id, msg, msgType, msgTypeName: 'position' }
-              logger.error(logPayload, 'Cannot deserialize message')
+              errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'position')
             }
             self.onPositionMessage(ws, message)
             break
           }
           default: {
-            const logPayload = { id, msg, msgType }
-            logger.info(logPayload, 'Cannot deserialize message')
+            debugSocketMessageEvent(ws, msgType, 'ignore_message')
             break
           }
         }
       })
 
       ws.on('error', err => {
-        const logPayload = { err, id }
-        logger.error(logPayload, 'Socket error')
+        logSocketEvent(ws, 'error', err)
       })
 
       ws.on('close', () => {
-        const logPayload = { id, event: 'closed' }
-        logger.info(logPayload, 'Socket closed')
+        logSocketEvent(ws, 'closed')
 
         const msg = new ClientDisconnectedFromServerMessage()
         msg.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
@@ -114,6 +130,7 @@ export class CommServer {
   }
 
   protected onPositionMessage(ws: EnrichedWebSocket, message: PositionMessage) {
+    debugSocketMessageEvent(ws, MessageType.POSITION, 'processing', 'position')
     const msgTimestamp = message.getTime()
     if (!ws.lastPositionUpdate || ws.lastPositionUpdate < msgTimestamp) {
       ws.position = new V2(Math.trunc(message.getPositionX()), Math.trunc(message.getPositionY()))
@@ -127,18 +144,19 @@ export class CommServer {
   }
 
   protected onChatMessage(ws: EnrichedWebSocket, message: ChatMessage) {
+    debugSocketMessageEvent(ws, MessageType.CHAT, 'processing', 'chat')
     message.setPeerId(ws.id)
     this.broadcast(ws, message)
   }
 
-  protected onUnsupportedMessage(ws: EnrichedWebSocket, messageType: MessageType, message) {
-    logger.info('unsupported message', messageType, message)
+  protected onUnknownMessage(ws: EnrichedWebSocket, messageType: MessageType, message) {
+    debugSocketMessageEvent(ws, MessageType.UNKNOWN, 'processing', 'unknown')
   }
 
   protected sendSetupMessage(ws: WebSocket) {
     const message = new ServerSetupRequestMessage()
     message.setType(MessageType.SERVER_REQUEST_SETUP)
-    message.setUpdatesPerSecond(options.updatesPerSecond)
+    message.setUpdatesPerSecond(settings.updatesPerSecond)
     sendMessage(ws, message)
   }
 
@@ -151,27 +169,35 @@ export class CommServer {
     const bytes = msg.serializeBinary()
 
     if (!ws.position) {
+      debugSocketMessageEvent(ws, msgType, 'skip_broadcast')
       return
     }
 
-    const commArea = new CommunicationArea(ws.position, options.communicationRadius + options.communicationRadiusTolerance)
+    const commArea = new CommunicationArea(ws.position, settings.communicationRadius + settings.communicationRadiusTolerance)
     const totalClients = this.wss.clients.size
     let attemptToReach = 0
 
-    // TODO: metric time spent in this loop
+    const loopStart = new Date()
     this.wss.clients.forEach((client: EnrichedWebSocket) => {
       if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
         attemptToReach++
         client.send(bytes, err => {
+          // TODO: metric increment success/error
           if (err) {
-            // TODO: should be do something else here?
-            logger.error({ err: err, id: client.id, msgType }, 'error sending to client')
+            logger.error({ err: err, id: client.id, msgType, event: 'send_message' }, 'error sending to client')
           }
         })
       }
     })
 
-    // TODO metric attemptToReach/totalClients ratio
-    console.log(`total clients: ${totalClients}, attempt to reach: ${attemptToReach}`)
+    // TODO metric
+    const loopDurationMs = new Date().getTime() - loopStart.getTime()
+    logger.info({ loopDurationMs }, 'loop duration')
+
+    // TODO metric
+    const broadcastRatio = totalClients === 0 ? 1 : attemptToReach / totalClients
+    logger.info({ event: 'broadcast', totalClients, attemptToReach, broadcastRatio }, 'broadcast')
+
+    debugSocketMessageEvent(ws, msgType, 'broadcast_complete')
   }
 }

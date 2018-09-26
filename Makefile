@@ -38,7 +38,7 @@ build-client: build-protocol
 build: build-server build-client build-protocol
 
 test: build
-	node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
+	NODE_ENV=test node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
 
 lint:
 	./node_modules/.bin/tslint -p packages/client/ || echo "fail"
