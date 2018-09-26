@@ -194,7 +194,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         type: jspb.Message.getFieldWithDefault(msg, 1, 0),
-        updatesPerSecond: jspb.Message.getFieldWithDefault(msg, 2, 0)
+        positionUpdateMs: jspb.Message.getFieldWithDefault(msg, 2, 0)
       }
 
     if (includeInstance) {
@@ -235,7 +235,7 @@ proto.ServerSetupRequestMessage.deserializeBinaryFromReader = function(msg, read
         break
       case 2:
         var value = /** @type {number} */ (reader.readUint32())
-        msg.setUpdatesPerSecond(value)
+        msg.setPositionUpdateMs(value)
         break
       default:
         reader.skipField()
@@ -268,7 +268,7 @@ proto.ServerSetupRequestMessage.serializeBinaryToWriter = function(message, writ
   if (f !== 0.0) {
     writer.writeEnum(1, f)
   }
-  f = message.getUpdatesPerSecond()
+  f = message.getPositionUpdateMs()
   if (f !== 0) {
     writer.writeUint32(2, f)
   }
@@ -288,15 +288,15 @@ proto.ServerSetupRequestMessage.prototype.setType = function(value) {
 }
 
 /**
- * optional uint32 updates_per_second = 2;
+ * optional uint32 position_update_ms = 2;
  * @return {number}
  */
-proto.ServerSetupRequestMessage.prototype.getUpdatesPerSecond = function() {
+proto.ServerSetupRequestMessage.prototype.getPositionUpdateMs = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0))
 }
 
 /** @param {number} value */
-proto.ServerSetupRequestMessage.prototype.setUpdatesPerSecond = function(value) {
+proto.ServerSetupRequestMessage.prototype.setPositionUpdateMs = function(value) {
   jspb.Message.setProto3IntField(this, 2, value)
 }
 

@@ -27,8 +27,8 @@ export class ServerSetupRequestMessage extends jspb.Message {
   getType(): MessageType
   setType(value: MessageType): void
 
-  getUpdatesPerSecond(): number
-  setUpdatesPerSecond(value: number): void
+  getPositionUpdateMs(): number
+  setPositionUpdateMs(value: number): void
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): ServerSetupRequestMessage.AsObject
@@ -43,7 +43,7 @@ export class ServerSetupRequestMessage extends jspb.Message {
 export namespace ServerSetupRequestMessage {
   export type AsObject = {
     type: MessageType
-    updatesPerSecond: number
+    positionUpdateMs: number
   }
 }
 

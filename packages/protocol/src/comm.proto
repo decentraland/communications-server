@@ -14,7 +14,7 @@ message GenericMessage {
 
 message ServerSetupRequestMessage {
     MessageType type = 1;
-    uint32 updates_per_second = 2;
+    uint32 position_update_ms = 2;
 }
 
 message PositionMessage {
