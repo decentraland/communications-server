@@ -1,7 +1,6 @@
 import 'mocha'
 import * as chai from 'chai'
 import * as WebSocket from 'ws'
-import * as http from 'http'
 import { CommServer, V2 } from 'dcl-comm-server'
 import { GenericMessage, MessageType } from 'dcl-comm-protocol'
 
@@ -16,22 +15,23 @@ const expect = chai.expect
 
 function fakeConnect(wss, ws) {
   ws.readyState = WebSocket.OPEN
+  ws.ping = sinon.stub()
+  ws.terminate = sinon.stub()
   wss.emit('connection', ws)
   wss.clients.add(ws) // this is hacky but otherwise I need to fake the whole upgrade to websocket
 }
 
 describe('server tests', () => {
-  let httpServer
   let wss
+  let commServer
 
   beforeEach(() => {
-    httpServer = http.createServer()
-    wss = new WebSocket.Server({ server: httpServer })
-    const _commServer = new CommServer(wss)
+    wss = new WebSocket.Server({ noServer: true })
+    commServer = new CommServer(wss)
   })
 
-  after(() => {
-    httpServer.close()
+  afterEach(() => {
+    commServer.close()
   })
 
   describe('handshake', () => {

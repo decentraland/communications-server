@@ -4,12 +4,16 @@ export function recordTotalConnections(total: number) {
   newrelic.recordMetric('Custom/Server/TotalConnections', total)
 }
 
-export function incrementSocketConnectionOpen() {
+export function incrementConnectionOpen() {
   newrelic.incrementMetric('Custom/Server/ConnectionOpen', 1)
 }
 
-export function incrementSocketConnectionClosed() {
+export function incrementConnectionClosed() {
   newrelic.incrementMetric('Custom/Server/ConnectionClosed', 1)
+}
+
+export function incrementConnectionBroken() {
+  newrelic.incrementMetric('Custom/Server/ConnectionBroken', 1)
 }
 
 export function incrementBroadcastSkipped() {

@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "lib": ["es2017", "esnext.asynciterable"]
   },
   "extends": "../../tsconfig.json",
   "exclude": ["node_modules", "dist"],

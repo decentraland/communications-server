@@ -13,6 +13,7 @@ export class EnrichedWebSocket extends WebSocket {
   public position: V2
   public lastPositionUpdate: number
   public id: string
+  public isAlive: boolean
 }
 
 export class CommunicationArea {

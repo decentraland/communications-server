@@ -6,40 +6,63 @@ enum MessageType {
   POSITION = 2;
   CHAT = 3;
   CLIENT_DISCONNECTED_FROM_SERVER = 4;
+  PROFILE = 5;
+  CLOCK_SKEW_DETECTED = 6;
 }
 
 message GenericMessage {
     MessageType type = 1;
+    double time = 2;
 }
 
 message ServerSetupRequestMessage {
     MessageType type = 1;
-    uint32 position_update_ms = 2;
+    double time = 2;
+    uint32 position_update_ms = 3;
+    uint32 profile_update_ms = 4;
 }
 
 message PositionMessage {
     MessageType type = 1;
-    float position_x = 2;
-    float position_y = 3;
-    float rotation_x = 4;
-    float rotation_y = 5;
-    float rotation_z = 6;
-    float rotation_w = 7;
-    double time = 8;
-    string peer_id = 9;
+    double time = 2;
+    float position_x = 3;
+    float position_y = 4;
+    float position_z = 5;
+    float rotation_x = 6;
+    float rotation_y = 7;
+    float rotation_z = 8;
+    float rotation_w = 9;
+    string peer_id = 10;
+}
+
+message ProfileMessage {
+    MessageType type = 1;
+    double time = 2;
+    float position_x = 3;
+    float position_y = 4;
+    string avatar_type = 5;
+    string display_name = 6;
+    string peer_id = 7;
+    string public_key = 8;
 }
 
 message ChatMessage {
     MessageType type = 1;
-    float position_x = 2;
-    float position_y = 3;
-    string text = 4;
-    double time = 5;
-    string peer_id = 6;
+    double time = 2;
+    string message_id = 3;
+    float position_x = 4;
+    float position_y = 5;
+    string text = 6;
+    string peer_id = 7;
 }
 
 message ClientDisconnectedFromServerMessage {
     MessageType type = 1;
     double time = 2;
     string peer_id = 3;
+}
+
+message ClockSkewMessage {
+    MessageType type = 1;
+    double time = 2;
 }
