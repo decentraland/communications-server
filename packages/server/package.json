@@ -6,13 +6,18 @@
   },
   "main": "dist/index.js",
   "dependencies": {
+    "@newrelic/native-metrics": "^3.1.1",
     "bunyan-logstash": "^0.3.4",
+    "dotenv": "^6.0.0",
     "google-protobuf": "^3.6.1",
+    "newrelic": "^4.8.1",
     "source-map-support": "^0.5.9",
     "ws": "^6.0.0"
   },
   "devDependencies": {
+    "@types/dotenv": "^4.0.3",
     "@types/google-protobuf": "^3.2.7",
+    "@types/newrelic": "^3.3.0",
     "@types/node": "^10.10.1",
     "@types/ws": "^6.0.1",
     "ts-node": "^7.0.1",

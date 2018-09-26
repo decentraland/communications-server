@@ -19,6 +19,7 @@ import {
 
 import { logger } from './logger'
 import { settings } from './settings'
+import * as agent from './agent'
 
 process.on('uncaughtException', err => {
   logger.error({ err }, 'Uncaught exception')
@@ -63,6 +64,7 @@ export class CommServer {
     this.wss = wss
 
     this.wss.on('connection', (ws: EnrichedWebSocket) => {
+      agent.incrementSocketConnection()
       const id = uuid()
       ws.id = id
       self.sendSetupMessage(ws)
@@ -109,6 +111,7 @@ export class CommServer {
       })
 
       ws.on('close', () => {
+        agent.incrementSocketClosed()
         logSocketEvent(ws, 'closed')
 
         const msg = new ClientDisconnectedFromServerMessage()
@@ -170,6 +173,7 @@ export class CommServer {
 
     if (!ws.position) {
       debugSocketMessageEvent(ws, msgType, 'skip_broadcast')
+      agent.incrementBroadcastSkip()
       return
     }
 
@@ -182,22 +186,19 @@ export class CommServer {
       if (client !== ws && client.readyState === WebSocket.OPEN && commArea.contains(client)) {
         attemptToReach++
         client.send(bytes, err => {
-          // TODO: metric increment success/error
           if (err) {
             logger.error({ err: err, id: client.id, msgType, event: 'send_message' }, 'error sending to client')
+            agent.incrementBroadcastFailureMessageDelivery()
+            return
           }
+          agent.incrementBroadcastSuccessMessageDelivery()
         })
       }
     })
 
-    // TODO metric
     const loopDurationMs = new Date().getTime() - loopStart.getTime()
-    logger.info({ loopDurationMs }, 'loop duration')
-
-    // TODO metric
-    const broadcastRatio = totalClients === 0 ? 1 : attemptToReach / totalClients
-    logger.info({ event: 'broadcast', totalClients, attemptToReach, broadcastRatio }, 'broadcast')
-
+    agent.recordBroadcastLoopDuration(loopDurationMs)
+    agent.recordBroadcastRation(totalClients, attemptToReach)
     debugSocketMessageEvent(ws, msgType, 'broadcast_complete')
   }
 }
