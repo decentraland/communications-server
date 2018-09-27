@@ -64,7 +64,8 @@ export class CommServer {
     this.wss = wss
 
     this.wss.on('connection', (ws: EnrichedWebSocket) => {
-      agent.incrementSocketConnection()
+      agent.incrementSocketConnectionOpen()
+      agent.recordTotalConnections(this.wss.clients.size)
       const id = uuid()
       ws.id = id
       self.sendSetupMessage(ws)
@@ -111,7 +112,8 @@ export class CommServer {
       })
 
       ws.on('close', () => {
-        agent.incrementSocketClosed()
+        agent.incrementSocketConnectionClosed()
+        agent.recordTotalConnections(this.wss.clients.size)
         logSocketEvent(ws, 'closed')
 
         const msg = new ClientDisconnectedFromServerMessage()
@@ -173,7 +175,7 @@ export class CommServer {
 
     if (!ws.position) {
       debugSocketMessageEvent(ws, msgType, 'skip_broadcast')
-      agent.incrementBroadcastSkip()
+      agent.incrementBroadcastSkipped()
       return
     }
 
@@ -198,7 +200,7 @@ export class CommServer {
 
     const loopDurationMs = new Date().getTime() - loopStart.getTime()
     agent.recordBroadcastLoopDuration(loopDurationMs)
-    agent.recordBroadcastRation(totalClients, attemptToReach)
+    agent.recordBroadcastRatio(totalClients, attemptToReach)
     debugSocketMessageEvent(ws, msgType, 'broadcast_complete')
   }
 }

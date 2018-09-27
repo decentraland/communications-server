@@ -2,7 +2,7 @@
   "name": "dcl-comm-client",
   "version": "1.0.0",
   "scripts": {
-    "build": "node_modules/.bin/tsc"
+    "build": "node_modules/typescript/bin/tsc"
   },
   "main": "dist/index.js",
   "dependencies": {

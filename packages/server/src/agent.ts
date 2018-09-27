@@ -1,33 +1,34 @@
 import * as newrelic from 'newrelic'
 
-export function incrementSocketConnection() {
-  newrelic.incrementMetric('Custom/Socket/Connection', 1)
+export function recordTotalConnections(total: number) {
+  newrelic.recordMetric('Custom/Server/TotalConnections', total)
 }
 
-export function incrementSocketClosed() {
-  newrelic.incrementMetric('Custom/Socket/Closed', 1)
+export function incrementSocketConnectionOpen() {
+  newrelic.incrementMetric('Custom/Server/ConnectionOpen', 1)
 }
 
-export function incrementBroadcastSkip() {
-  newrelic.incrementMetric('Custom/Broadcast/Skip', 1)
+export function incrementSocketConnectionClosed() {
+  newrelic.incrementMetric('Custom/Server/ConnectionClosed', 1)
+}
+
+export function incrementBroadcastSkipped() {
+  newrelic.incrementMetric('Custom/Broadcast/Skipped', 1)
 }
 
 export function incrementBroadcastSuccessMessageDelivery() {
-  newrelic.incrementMetric('Custom/Broadcast/SuccessMessageDelivery', 1)
+  newrelic.incrementMetric('Custom/Broadcast/MessageDeliverySuccess', 1)
 }
 
 export function incrementBroadcastFailureMessageDelivery() {
-  newrelic.incrementMetric('Custom/Broadcast/FailureMessageDelivery', 1)
+  newrelic.incrementMetric('Custom/Broadcast/MessageDeliveryFailed', 1)
 }
 
-export function incrementBroadcastLoopDuration(loopDurationMs: number) {
-  newrelic.recordMetric('Custom/Broadcast/Loop', loopDurationMs)
-}
 export function recordBroadcastLoopDuration(loopDurationMs: number) {
-  newrelic.recordMetric('Custom/Broadcast/Loop', loopDurationMs)
+  newrelic.recordMetric('Custom/Broadcast/LoopDuration', loopDurationMs)
 }
 
-export function recordBroadcastRation(totalClients: number, attemptToReach: number) {
+export function recordBroadcastRatio(totalClients: number, attemptToReach: number) {
   const broadcastRatio = totalClients === 0 ? 1 : attemptToReach / totalClients
   newrelic.recordMetric('Custom/Broadcast/Ratio', broadcastRatio)
 }

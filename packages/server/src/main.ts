@@ -5,7 +5,7 @@ import * as http from 'http'
 
 const httpServer = http.createServer()
 const wss = new WebSocket.Server({ server: httpServer })
-const commServer = new CommServer(wss)
+const _commServer = new CommServer(wss)
 
 httpServer.listen(() => {
   const address = httpServer.address() as WebSocket.AddressInfo
