@@ -37,7 +37,7 @@ export function buildChatMessage(x: number, y: number, text: string, time?: Date
 export function buildSetupMessage(updatesPerSecond: number) {
   const m = new ServerSetupRequestMessage()
   m.setType(MessageType.SERVER_REQUEST_SETUP)
-  m.setUpdatesPerSecond(updatesPerSecond)
+  m.setPositionUpdateMs(Math.floor(1000 / updatesPerSecond))
   return m
 }
 

@@ -156,7 +156,7 @@ export class CommServer {
   protected sendSetupMessage(ws: WebSocket) {
     const message = new ServerSetupRequestMessage()
     message.setType(MessageType.SERVER_REQUEST_SETUP)
-    message.setUpdatesPerSecond(settings.updatesPerSecond)
+    message.setPositionUpdateMs(Math.floor(1000 / settings.updatesPerSecond))
     sendMessage(ws, message)
   }
 
