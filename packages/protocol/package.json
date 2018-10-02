@@ -2,7 +2,7 @@
   "name": "dcl-comm-protocol",
   "version": "1.0.0",
   "scripts": {
-    "build": "node_modules/typescript/bin/tsc && cp src/comm_pb.* dist"
+    "build": "tsc && cp src/comm_pb.* dist"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

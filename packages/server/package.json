@@ -2,7 +2,7 @@
   "name": "dcl-comm-server",
   "version": "1.0.0",
   "scripts": {
-    "build": "node_modules/typescript/bin/tsc"
+    "build": "tsc"
   },
   "main": "dist/index.js",
   "dependencies": {
