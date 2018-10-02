@@ -24,6 +24,7 @@
     "@types/uuid": "^3.4.4",
     "@types/ws": "^6.0.1",
     "chai": "^4.1.2",
+    "commander": "^2.18.0",
     "dcl-tslint-config-standard": "^1.1.0",
     "husky": "^1.0.0-rc.14",
     "lint-staged": "^7.3.0",

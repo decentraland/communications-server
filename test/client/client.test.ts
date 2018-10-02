@@ -27,8 +27,6 @@ describe('client tests', () => {
     ws = new EventEmitter() as WebSocket
     ws.send = sinon.stub().yields()
 
-    console.log('x')
-
     strategy = {
       onSetupMessage: sinon.stub(),
       onPositionMessage: sinon.stub(),

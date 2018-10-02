@@ -1,3 +1,7 @@
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
 export enum Env {
   PRODUCTION,
   DEV,
@@ -23,6 +27,7 @@ class Settings {
   public updatesPerSecond = 10
   public communicationRadius = 10
   public communicationRadiusTolerance = 2
+  public newRelicLicenseKey?: string = process.env.NEW_RELIC_LICENSE_KEY
 }
 
 export const settings = new Settings()

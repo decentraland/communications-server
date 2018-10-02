@@ -12,6 +12,7 @@ import {
   MessageType
 } from 'dcl-comm-protocol'
 
+import { getRndLine } from '../utils/chatHelpers'
 import * as sinon from 'sinon'
 import * as sinonChai from 'sinon-chai'
 chai.use(sinonChai)
@@ -45,13 +46,6 @@ describe('basic e2e tests', () => {
     commServer.close()
     httpServer.close()
   })
-
-  const script = ['hello', 'hi', 'bye', 'ok', 'no', 'yes', 'something', 'something else']
-
-  function getRndLine(): string {
-    const r = Math.floor(Math.random() * script.length)
-    return script[r]
-  }
 
   function openWs(ws: WebSocket) {
     return new Promise((resolve, reject) => {

@@ -23,13 +23,11 @@ function fakeConnect(wss, ws) {
 describe('server tests', () => {
   let httpServer
   let wss
-  let commServer: CommServer
 
   beforeEach(() => {
     httpServer = http.createServer()
     wss = new WebSocket.Server({ server: httpServer })
-    commServer = new CommServer(wss)
-    expect(commServer).to.be.ok
+    const _commServer = new CommServer(wss)
   })
 
   after(() => {

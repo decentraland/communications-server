@@ -35,6 +35,8 @@ install:
 	cd ./packages/protocol/; npm i
 	cd ./packages/client; npm i
 
+devinstall: install devlink
+
 build-protocol:
 	cd ./packages/protocol/; npm run build
 
