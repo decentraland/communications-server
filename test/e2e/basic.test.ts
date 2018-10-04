@@ -1,16 +1,18 @@
 import 'mocha'
 import * as chai from 'chai'
-import * as WebSocket from 'ws'
+import * as WebSocket from 'isomorphic-ws'
 import * as http from 'http'
 import { CommServer, V2 } from 'dcl-comm-server'
 import { ClientStrategy, CommClient } from 'dcl-comm-client'
 import {
   ChatMessage,
   PositionMessage,
+  ProfileMessage,
   ServerSetupRequestMessage,
   ClientDisconnectedFromServerMessage,
   MessageType
 } from 'dcl-comm-protocol'
+import { UserData as EphemeralKey } from 'ephemeralkey'
 
 import { getRndLine } from '../utils/chatHelpers'
 import * as sinon from 'sinon'
@@ -18,6 +20,8 @@ import * as sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
 const expect = chai.expect
+
+global['WebSocket'] = WebSocket
 
 function sleep(n) {
   return new Promise(resolve => {
@@ -47,22 +51,21 @@ describe('basic e2e tests', () => {
     httpServer.close()
   })
 
-  function openWs(ws: WebSocket) {
-    return new Promise((resolve, reject) => {
-      ws.on('open', resolve)
-      ws.on('error', reject)
-    })
-  }
-
   class ClientTestStrategy implements ClientStrategy {
     // NOTE: this is not a realistic implementation because it only connects to one server
     public peers = new Map<string, V2>()
+
+    async getEphemeralKeys(): Promise<EphemeralKey> {
+      return null
+    }
 
     onPositionMessage(client: CommClient, message: PositionMessage) {
       const peerId = message.getPeerId()
       const p = new V2(message.getPositionX(), message.getPositionY())
       this.peers.set(peerId, p)
     }
+
+    onProfileMessage(client: CommClient, message: ProfileMessage) {}
 
     onChatMessage(client: CommClient, message: ChatMessage) {
       const peerId = message.getPeerId()
@@ -78,45 +81,52 @@ describe('basic e2e tests', () => {
 
     onSetupMessage(client: CommClient, message: ServerSetupRequestMessage) {}
     onUnsupportedMessage(client: CommClient, messageType: MessageType, message) {}
-    onSocketError(error) {}
+    onSocketError(client: CommClient, error: Error) {}
+    onSocketClosed(client: CommClient) {}
+    onClockSkewDetected(client: CommClient) {}
   }
 
   function buildTestClientStrategy(): ClientStrategy {
     const strategy = new ClientTestStrategy()
+    sinon.spy(strategy, 'getEphemeralKeys')
     sinon.spy(strategy, 'onSetupMessage')
     sinon.spy(strategy, 'onPositionMessage')
     sinon.spy(strategy, 'onChatMessage')
+    sinon.spy(strategy, 'onProfileMessage')
     sinon.spy(strategy, 'onUnsupportedMessage')
     sinon.spy(strategy, 'onSocketError')
+    sinon.spy(strategy, 'onClockSkewDetected')
     return strategy
   }
 
   describe('clients should intereact with each other when in comm area', () => {
+    let messageId = 0
     const clients = []
 
     before('create and connect clients', async () => {
       for (let i = 0; i < 10; i++) {
-        const ws = new WebSocket(`ws://localhost:${port}`)
         const strategy = buildTestClientStrategy()
 
-        const client = new CommClient(ws, strategy)
+        const client = new CommClient(strategy)
 
-        await openWs(ws)
+        client.connectToUrl(`ws://localhost:${port}`, false)
         clients.push(client)
       }
     })
 
     it('they should talk to each other', async () => {
+      await sleep(50)
+
       // NOTE: set initial position for each one
       for (let client of clients) {
-        await client.sendPositionMessage(1, 1)
+        expect(client.sendPositionMessage(1, 1)).to.be.true
       }
 
       await sleep(100)
 
       // NOTE: discover each other
       for (let client of clients) {
-        await client.sendPositionMessage(1, 1)
+        expect(client.sendPositionMessage(1, 1)).to.be.true
       }
 
       await sleep(100)
@@ -124,7 +134,7 @@ describe('basic e2e tests', () => {
       for (let client of clients) {
         const strategy = client.getStrategy()
         expect(strategy.peers.size).to.equal(clients.length - 1)
-        await client.sendChatMessage(1, 1, getRndLine())
+        expect(client.sendPublicChatMessage(1, 1, `${messageId++}`, getRndLine())).to.be.true
       }
 
       await sleep(100)

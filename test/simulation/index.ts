@@ -3,14 +3,14 @@ import * as cluster from 'cluster'
 import { startClient } from './client'
 
 program
-  .option('-p, --port [port]', 'Port', '5000')
+  .option('-p, --port [port]', 'Port', '9090')
   .option('-h, --host [host]', 'host', 'localhost')
+  .option('-w, --workers [n]', 'Amount of workers', 10)
   .parse(process.argv)
 
 const host = program.host
 const port = program.port
-
-const workers = 5
+const workers = Number(program.workers)
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`)

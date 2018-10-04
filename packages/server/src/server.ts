@@ -7,15 +7,26 @@ import * as WebSocket from 'ws'
 import * as uuid from 'uuid/v4'
 import { EnrichedWebSocket, V2, CommunicationArea } from './utils'
 import {
-  decodeMessageType,
-  sendMessage,
   GenericMessage,
   MessageType,
   ChatMessage,
   PositionMessage,
   ClientDisconnectedFromServerMessage,
-  ServerSetupRequestMessage
+  ServerSetupRequestMessage,
+  ProfileMessage,
+  ClockSkewMessage
 } from 'dcl-comm-protocol'
+
+export function decodeMessageHeader(data: Uint8Array): [MessageType, number] {
+  try {
+    const msg = GenericMessage.deserializeBinary(data)
+    const msgType = msg.getType()
+    const timestamp = msg.getTime()
+    return [msgType, timestamp]
+  } catch (e) {
+    return [MessageType.UNKNOWN, 0]
+  }
+}
 
 import { logger } from './logger'
 import { settings } from './settings'
@@ -56,15 +67,24 @@ function errorSocketMessageEvent(ws: EnrichedWebSocket, msgType: MessageType, ev
   logger.error(payload, 'Socket message error')
 }
 
+function ping() {
+  logger.debug('PING..')
+}
+
 export class CommServer {
   private wss: WebSocket.Server
+  private checkConnectionsInterval
 
   constructor(wss: WebSocket.Server) {
     const self = this
     this.wss = wss
 
     this.wss.on('connection', (ws: EnrichedWebSocket) => {
-      agent.incrementSocketConnectionOpen()
+      ws.isAlive = true
+      ws.on('pong', () => {
+        ws.isAlive = true
+      })
+      agent.incrementConnectionOpen()
       agent.recordTotalConnections(this.wss.clients.size)
       const id = uuid()
       ws.id = id
@@ -73,7 +93,17 @@ export class CommServer {
       logSocketEvent(ws, 'connected')
 
       ws.on('message', (msg: Uint8Array) => {
-        const msgType = decodeMessageType(msg)
+        const now = new Date().getTime()
+        const [msgType, msgTimestamp] = decodeMessageHeader(msg)
+        if (msgTimestamp > now) {
+          // TODO: I get a consistent 1ms diff from chrome and the server running on my machine
+          debugSocketMessageEvent(ws, msgType, 'clock_skew')
+          const message = new ClockSkewMessage()
+          message.setType(MessageType.CLOCK_SKEW_DETECTED)
+          message.setTime(new Date().getTime())
+          this.sendMessage(ws, message)
+          return
+        }
         debugSocketMessageEvent(ws, msgType, 'dispatching')
         switch (msgType) {
           case MessageType.UNKNOWN: {
@@ -86,8 +116,20 @@ export class CommServer {
               message = ChatMessage.deserializeBinary(msg)
             } catch (e) {
               errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'chat')
+              break
             }
             self.onChatMessage(ws, message)
+            break
+          }
+          case MessageType.PROFILE: {
+            let message
+            try {
+              message = ProfileMessage.deserializeBinary(msg)
+            } catch (e) {
+              errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'profile')
+              break
+            }
+            self.onProfileMessage(ws, message)
             break
           }
           case MessageType.POSITION: {
@@ -96,6 +138,7 @@ export class CommServer {
               message = PositionMessage.deserializeBinary(msg)
             } catch (e) {
               errorSocketMessageEvent(ws, msgType, 'deserialize', e, 'position')
+              break
             }
             self.onPositionMessage(ws, message)
             break
@@ -112,7 +155,7 @@ export class CommServer {
       })
 
       ws.on('close', () => {
-        agent.incrementSocketConnectionClosed()
+        agent.incrementConnectionClosed()
         agent.recordTotalConnections(this.wss.clients.size)
         logSocketEvent(ws, 'closed')
 
@@ -128,9 +171,25 @@ export class CommServer {
       // TODO: handle this
       logger.error({ err }, 'websocket server error')
     })
+
+    this.checkConnectionsInterval = setInterval(() => {
+      wss.clients.forEach((ws: EnrichedWebSocket) => {
+        if (ws.isAlive === false) {
+          logSocketEvent(ws, 'closing_broken_connection')
+          agent.incrementConnectionBroken()
+          return ws.terminate()
+        }
+
+        ws.isAlive = false
+        ws.ping(ping)
+      })
+    }, settings.checkConnectionsIntervalMs)
   }
 
   public close() {
+    if (this.checkConnectionsInterval) {
+      clearInterval(this.checkConnectionsInterval)
+    }
     this.wss.close()
   }
 
@@ -154,6 +213,12 @@ export class CommServer {
     this.broadcast(ws, message)
   }
 
+  protected onProfileMessage(ws: EnrichedWebSocket, message: ProfileMessage) {
+    debugSocketMessageEvent(ws, MessageType.PROFILE, 'processing', 'profile')
+    message.setPeerId(ws.id)
+    this.broadcast(ws, message)
+  }
+
   protected onUnknownMessage(ws: EnrichedWebSocket, messageType: MessageType, message) {
     debugSocketMessageEvent(ws, MessageType.UNKNOWN, 'processing', 'unknown')
   }
@@ -161,8 +226,11 @@ export class CommServer {
   protected sendSetupMessage(ws: WebSocket) {
     const message = new ServerSetupRequestMessage()
     message.setType(MessageType.SERVER_REQUEST_SETUP)
-    message.setPositionUpdateMs(Math.floor(1000 / settings.updatesPerSecond))
-    sendMessage(ws, message)
+    message.setTime(new Date().getTime())
+    message.setPositionUpdateMs(Math.floor(1000 / settings.positionUpdatesPerSecond))
+    message.setProfileUpdateMs(Math.floor(1000 / settings.profileUpdatesPerSecond))
+
+    this.sendMessage(ws, message)
   }
 
   private broadcast(ws: EnrichedWebSocket, msg) {
@@ -202,5 +270,11 @@ export class CommServer {
     agent.recordBroadcastLoopDuration(loopDurationMs)
     agent.recordBroadcastRatio(totalClients, attemptToReach)
     debugSocketMessageEvent(ws, msgType, 'broadcast_complete')
+    logger.info({ totalClients, attemptToReach, msgType }, 'broadcast')
+  }
+
+  private sendMessage(ws: WebSocket, message) {
+    const bytes = message.serializeBinary()
+    ws.send(bytes)
   }
 }
