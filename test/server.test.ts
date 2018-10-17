@@ -4,7 +4,7 @@ import * as WebSocket from 'ws'
 import { CommServer, V2 } from 'dcl-comm-server'
 import { GenericMessage, MessageType, FlowStatus } from 'dcl-comm-protocol'
 
-import { messageTypeMatcher, buildPositionMessage, buildChatMessage } from '../utils/messageHelpers'
+import { messageTypeMatcher, buildPositionMessage, buildChatMessage } from './utils/messageHelpers'
 
 import * as sinon from 'sinon'
 import * as sinonChai from 'sinon-chai'
