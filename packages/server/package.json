@@ -10,8 +10,13 @@
     "bufferutil": "^4.0.0",
     "bunyan-logstash": "^0.3.4",
     "dotenv": "^6.0.0",
+    "ephemeralkey": "^2.0.1",
+    "eth-connect": "^0.3.2",
+    "formdata-node": "^1.0.1",
     "google-protobuf": "^3.6.1",
+    "isomorphic-fetch": "^2.2.1",
     "newrelic": "^4.8.1",
+    "readable-stream-clone": "0.0.4",
     "source-map-support": "^0.5.9",
     "utf-8-validate": "^5.0.1",
     "ws": "^6.0.0"

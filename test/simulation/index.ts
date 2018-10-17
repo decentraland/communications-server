@@ -1,21 +1,41 @@
-import * as program from 'commander'
 import * as cluster from 'cluster'
-import { startClient } from './client'
+import { V2, startWalkingBot } from './bot'
 
-program
-  .option('-p, --port [port]', 'Port', '5000')
-  .option('-h, --host [host]', 'host', 'localhost')
-  .parse(process.argv)
+const workers = 1
+const botsPerWorker = 5
 
-const host = program.host
-const port = program.port
+function startRandomWalkingBot() {
+  const checkpoints = []
 
-const workers = 5
+  for (let i = 0; i < 6; ++i) {
+    const x = (Math.random() * 2 - 1) * 2
+    const z = (Math.random() * 2 - 1) * 2
+
+    const p = new V2(x, z)
+    checkpoints.push(p)
+  }
+
+  for (let i = checkpoints.length - 2; i >= 0; --i) {
+    checkpoints.push(checkpoints[i])
+  }
+
+  const path = {
+    checkpoints: checkpoints,
+    durationMs: 10000
+  }
+
+  startWalkingBot({ path, speakFreqMs: 1000 })
+}
+
+function dispatch(workerIndex) {
+  for (let i = 0; i < botsPerWorker; ++i) {
+    startRandomWalkingBot()
+  }
+}
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`)
 
-  // Fork workers.
   for (let i = 0; i < workers; i++) {
     cluster.fork()
   }
@@ -24,7 +44,12 @@ if (cluster.isMaster) {
     console.log(`worker ${worker.process.pid} died`)
   })
 } else {
-  startClient(host, port)
+  const workerIndex = cluster.worker.id - 1
 
-  console.log(`Worker ${process.pid} started`)
+  try {
+    dispatch(workerIndex)
+    console.log(`Worker ${workerIndex}, pid: ${process.pid}`)
+  } catch (err) {
+    console.error('ERROR', err)
+  }
 }

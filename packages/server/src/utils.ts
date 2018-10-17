@@ -1,4 +1,5 @@
 import * as WebSocket from 'ws'
+import { FlowStatus } from 'dcl-comm-protocol'
 
 const MAX_PARCEL_X = 3000
 const MIN_PARCEL_X = -3000
@@ -9,10 +10,13 @@ export class V2 {
   constructor(public x: number, public y: number) {}
 }
 
-export class EnrichedWebSocket extends WebSocket {
-  public position: V2
-  public lastPositionUpdate: number
-  public id: string
+export type EnrichedWebSocket = WebSocket & {
+  position: V2
+  lastPositionUpdate: number
+  id: string
+  peerId: string
+  isAlive: boolean
+  flowStatus: FlowStatus
 }
 
 export class CommunicationArea {
