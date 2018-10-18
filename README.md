@@ -1,8 +1,11 @@
+Decentraland's communication server implementation
+
 # How to work on this project
 
-`make install` to install the dependencies for the packages
-`make devlink` to link them between each other
-`make build` to build the packages
+- `npm i` to install the dependencies
+- `npm link` to link the project
+- `npm build` to build
+- `make test` to run the tests
 
 # Protobuffer
 
