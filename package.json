@@ -1,15 +1,16 @@
 {
   "name": "dcl-comm-server",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/main.js"
   },
   "main": "dist/index.js",
   "dependencies": {
     "@newrelic/native-metrics": "^3.1.1",
     "bufferutil": "^4.0.0",
     "bunyan-logstash": "^0.3.4",
-    "dcl-comm-protocol": "github:decentraland/communications-protocol#v0.0.1",
+    "dcl-comm-protocol": "0.0.2",
     "dotenv": "^6.0.0",
     "ephemeralkey": "^2.0.1",
     "eth-connect": "^0.3.2",
@@ -46,5 +47,19 @@
     "tslint-language-service": "^0.9.9",
     "tslint-no-unused-expression-chai": "^0.1.4",
     "typescript": "^3.0.3"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decentraland/communications-server.git"
+  },
+  "author": "Decentraland",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/decentraland/communications-server/issues"
+  },
+  "homepage": "https://github.com/decentraland/communications-server#readme",
+  "description": "Decentraland's communication server implementation"
 }

@@ -1,11 +1,24 @@
-make build-server
-PORT=9090 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9091 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9092 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9093 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9094 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9095 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9096 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9097 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9098 node_modules/.bin/ts-node packages/server/dist/main.js &
-PORT=9099 node_modules/.bin/ts-node packages/server/dist/main.js &
+#!/bin/bash
+
+set -e
+
+start() {
+  node dist/main.js &
+  LEN=${#pids[*]}
+  pids[${LEN}]=$!
+}
+
+make build
+
+PORT=9090 start
+PORT=9091 start
+PORT=9092 start
+PORT=9093 start
+PORT=9094 start
+PORT=9095 start
+PORT=9096 start
+PORT=9097 start
+PORT=9098 start
+PORT=9099 start
+
+echo "to stop the servers run kill -kill ${pids[*]}"

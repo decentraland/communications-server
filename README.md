@@ -1,3 +1,5 @@
+Decentraland's communication server implementation
+
 # How to work on this project
 
 - `npm i` to install the dependencies
