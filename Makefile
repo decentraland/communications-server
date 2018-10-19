@@ -17,4 +17,9 @@ test: build
 lint:
 	./node_modules/.bin/tslint
 
+start-dev: build
+	NODE_ENV=dev AUTHORIZATION_ENABLED=no node dist/main.js
+
+
+
 .PHONY: installci build test lint
