@@ -1,6 +1,6 @@
 node {
   stage('Git clone/update') {
-        sshagent(credentials : ['nagios-prod']) {
+        sshagent(credentials : ['communications-server']) {
         sh '''
             Branch=`echo $Branch | awk -F"/" '{print $NF}'`
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
@@ -14,49 +14,28 @@ node {
   }
   stage('Image building') {
         sh '''
-          cd ${PROJECT}
-          tar -zcvf ${PROJECT}.tar.gz etc root usr
-          docker build -t ${ECREGISTRY}/${PROJECT}:latest .
-          rm ${PROJECT}.tar.gz
+          echo "Here goes the Image build"
         '''
   }
   stage('Testing') {
-    sh '''CONTAINERID=`docker run -d --name ${PROJECT} --rm $ECREGISTRY/$PROJECT:latest`
-        docker ps
-        if test $? -ne 0; then
-          echo "Error testing the container"
-          exit 2;
-        fi
-        docker stop $CONTAINERID'''
+        sh '''
+          echo "Here goes the test"
+        '''
   }
   stage('Image push') {
-        docker.withRegistry("https://$ECREGISTRY", "ecr:us-east-1:prod") {
-           docker.image("$ECREGISTRY/$PROJECT:latest").push()
-           sh 'docker rmi $ECREGISTRY/$PROJECT:latest'
+        sh '''
+          echo "Here goes the push"
+        '''
         }
   }
   stage('Container deploy') {
-    sh '''
-      Branch=`echo $Branch | awk -F"/" '{print $NF}'`
-      case $Branch in
-        master)
-                cd ${PROJECT}
-                git checkout master
-                test -h ${JENKINS_HOME}/.aws && unlink ${JENKINS_HOME}/.aws
-                ln -s ${JENKINS_HOME}/.aws-prod ${JENKINS_HOME}/.aws
-                cd .terraform/main
-                ./terraform-run.sh us-east-1 prod
-        ;;
-
-        *)  echo "Nagios dont work in env"
-        ;;
-      esac
-    '''
+        sh '''
+          echo  "And here the deploy"
+        '''
   }
   stage('Post Message') {
     sh '''
-    Branch=`echo $Branch | awk -F"/" '{print $NF}'`
-    /usr/bin/curl -X POST --data-urlencode "payload={\\"channel\\": \\"$Channel\\", \\"username\\": \\"$Username\\", \\"text\\": \\"The branch $Branch from repo $Repo was updated by $Committer with commit number $CommitNumber\\"}" $Url
+    /usr/bin/curl -X POST --data-urlencode "payload={"text\\": \\"The branch\\"}" https://hooks.slack.com/services/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
     '''
   }
 }
