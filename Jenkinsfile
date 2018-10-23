@@ -3,7 +3,7 @@ node {
         sshagent(credentials : ['communications-server']) {
         sh '''
             #Check the content of the payload and extract the Branch
-            Branch=`echo $PAYLOAD | awk -F"/" '{print $NF}'`
+            Branch="master"
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
             git checkout $Branch
             if test $? -ne 0; then
@@ -46,7 +46,7 @@ node {
   }
   stage('Container deploy') {
         sh '''
-          Branch=`echo $PAYLOAD | awk -F"/" '{print $NF}'`
+          Branch="master"
           REGION="us-east-1"
 
           #Depending on the Branch is where to Deploy
@@ -62,21 +62,15 @@ node {
             ;;
 
             *)
-              ENV="dev"
-              ln -s ${JENKINS_HOME}/.aws-${ENV} ${JENKINS_HOME}/.aws
-              git checkout $Branch
-              cd ${PROJECT}
-              test -h ${JENKINS_HOME}/.aws && unlink ${JENKINS_HOME}/.aws
-              cd .terraform/main
-              ./terraform-run.sh ${REGION} ${ENV}
+              echo "You're not pushing on Branch master."
+              exit 2
             ;;
           esac
-
         '''
   }
   stage('Post Message') {
         sh '''
-          /usr/bin/curl -X POST --data-urlencode "payload={"text\\": \\"The branch\\"}" https://hooks.slack.com/services/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
+          /usr/bin/curl -X POST --data-urlencode "payload={"text\\": \\"The branch $Branch wasa deployed Ok\\"}" https://hooks.slack.com/services/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
         '''
   }
 }
