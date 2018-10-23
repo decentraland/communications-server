@@ -57,3 +57,7 @@ variable "certificate_arn" {
 variable "family" {
   description = "Task definition family"
 }
+
+variable "cluster" {
+  description = "Cluster name"
+}

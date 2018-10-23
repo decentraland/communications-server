@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "this" {
 
 resource "aws_ecs_service" "this" {
   name            = "communications-server-${var.env}"
-  cluster         = "cl-devops-prod"
+  cluster         = "${var.cluster}-${var.env}"
   task_definition = "${aws_ecs_task_definition.this.family}:${aws_ecs_task_definition.this.revision}"
   launch_type     = "FARGATE"
   desired_count   = 1
