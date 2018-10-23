@@ -14,6 +14,7 @@ node {
   }
   stage('Image building') {
         sh '''
+            aws ecr get-login --no-include-email | bash 
             cd ${PROJECT}
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
             docker push ${ECREGISTRY}/${PROJECT}:latest
