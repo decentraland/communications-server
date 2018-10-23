@@ -61,7 +61,7 @@ node {
             ;;
 
             *)
-              echo "You're not pushing on Branch master."
+              echo "Youre not pushing on Branch master."
               exit 2
             ;;
           esac
