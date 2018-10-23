@@ -15,6 +15,6 @@
     "essential": true,
     "image": "245402993223.dkr.ecr.us-east-1.amazonaws.com/communications-server:latest",
     "memoryReservation": 256,
-    "name": ""
+    "name": "communications-server"
   }
 ]

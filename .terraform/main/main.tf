@@ -40,7 +40,7 @@ resource "aws_alb_listener" "this" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  family = "td-communications-server-prod"
+  family = "${var.family}-${var.env}"
   network_mode = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu = 256

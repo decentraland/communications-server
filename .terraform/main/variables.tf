@@ -53,3 +53,7 @@ variable "alb_container_port" {
 variable "certificate_arn" {
   description = "SSL certificate"
 }
+
+variable "family" {
+  desccription = "Task definition family"
+}
