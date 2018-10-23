@@ -24,8 +24,3 @@ fi
 terraform apply -auto-approve \
     -var-file=../config/$REGION/${ENV}/default.backend \
     -var-file=../config/$REGION/${ENV}/default.tfvars
-
-if test $? -ne 0; then
-    echo "Unable to perform terraform apply"
-    exit 2;
-fi
