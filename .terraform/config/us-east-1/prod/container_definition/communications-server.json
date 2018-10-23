@@ -8,6 +8,14 @@
       "name": "name",
       "value": "communications-server"
     }],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/fargate/service/communications-server/communications-server-prod",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
     "portMappings": [{
       "containerPort": 9090,
       "hostPort": 9090
