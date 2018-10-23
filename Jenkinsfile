@@ -67,9 +67,4 @@ node {
           esac
         '''
   }
-  stage('Post Message') {
-        sh '''
-          /usr/bin/curl -X POST --data-urlencode "payload={"text\\": \\"The branch $Branch wasa deployed Ok\\"}" https://hooks.slack.com/services/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
-        '''
-  }
 }
