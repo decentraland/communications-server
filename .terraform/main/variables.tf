@@ -55,5 +55,5 @@ variable "certificate_arn" {
 }
 
 variable "family" {
-  desccription = "Task definition family"
+  description = "Task definition family"
 }
