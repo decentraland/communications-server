@@ -9,8 +9,8 @@
       "value": "communications-server"
     }],
     "portMappings": [{
-      "containerPort": 3306,
-      "hostPort": 3306
+      "containerPort": 9090,
+      "hostPort": 9090
     }],
     "essential": true,
     "image": "245402993223.dkr.ecr.us-east-1.amazonaws.com/communications-server:latest",
