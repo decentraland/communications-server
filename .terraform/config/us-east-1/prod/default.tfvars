@@ -1,6 +1,6 @@
 region = "us-east-1"
 env = "prod"
-execution_role_arn = "arn:aws:iam::245402993223:role/ecsTaskExecutionRole"
+execution_role_arn = "arn:aws:iam::245402993223:policy/AmazonECSTaskExecutionRolePolicy"
 certificate_arn = "arn:aws:acm:us-east-1:245402993223:certificate/c5e285a2-c0e3-4a33-b93e-e4541eda4ea6"
 security_groups = ["sg-079c5e0cc8c3bf6c4"]
 assign_public_ip = false
