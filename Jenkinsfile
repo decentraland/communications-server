@@ -17,7 +17,6 @@ node {
             aws ecr get-login --no-include-email | bash
             cd ${PROJECT}
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
-            docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
   }
   stage('Removing  previous containers') {
@@ -40,6 +39,7 @@ node {
   stage('Image push') {
         sh '''
           docker push ${ECREGISTRY}/${PROJECT}:latest
+          docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
         }
   }
