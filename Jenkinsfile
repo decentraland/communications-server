@@ -14,10 +14,9 @@ node {
   }
   stage('Image building') {
         sh '''
-            aws ecr get-login --no-include-email | bash 
+            aws ecr get-login --no-include-email | bash
             cd ${PROJECT}
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
-            docker push ${ECREGISTRY}/${PROJECT}:latest
             docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
   }
@@ -40,7 +39,7 @@ node {
   }
   stage('Image push') {
         sh '''
-          echo "Here goes the push"
+          docker push ${ECREGISTRY}/${PROJECT}:latest
         '''
         }
   }
@@ -53,10 +52,10 @@ node {
           case $Branch in
             master)
               ENV="prod"
+              test -h ${JENKINS_HOME}/.aws && unlink ${JENKINS_HOME}/.aws
               ln -s ${JENKINS_HOME}/.aws-${ENV} ${JENKINS_HOME}/.aws
               cd ${PROJECT}
               git checkout $Branch
-              test -h ${JENKINS_HOME}/.aws && unlink ${JENKINS_HOME}/.aws
               cd .terraform/main
               ./terraform-run.sh ${REGION} ${ENV}
             ;;

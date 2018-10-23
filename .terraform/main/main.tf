@@ -11,7 +11,7 @@ resource "aws_alb" "this" {
 
 resource "aws_alb_target_group" "this" {
   name        = "${var.tg_name}-${var.env}"
-  port        = 80
+  port        = 9090
   protocol    = "HTTP"
   vpc_id      = "${data.terraform_remote_state.vpc.vpc_id}"
   target_type = "ip"
@@ -64,7 +64,7 @@ resource "aws_ecs_service" "this" {
 
   load_balancer {
     target_group_arn = "${aws_alb_target_group.this.id}"
-    container_name   = "fleet-communications-server-prod"
+    container_name   = "${var.container_name}"
     container_port   = "${var.alb_container_port}"
   }
 
