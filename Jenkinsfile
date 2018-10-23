@@ -11,7 +11,6 @@ node {
             fi
             git fetch
             git pull'''
-        }
   }
   stage('Image building') {
         sh '''
