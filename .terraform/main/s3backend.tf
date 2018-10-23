@@ -20,6 +20,6 @@ data "terraform_remote_state" "subnets" {
 
 terraform {
   backend "s3" {
-    key = "terraform/jenkins/osquery.tfstate"
+    key = "terraform/jenkins/communications-server.tfstate"
   }
 }

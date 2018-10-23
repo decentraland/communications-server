@@ -1,4 +1,4 @@
-communications-server#-- terraform/communications-server/main.tf
+#-- terraform/communications-server/main.tf
 provider "aws" {
   region = "${var.region}"
 }
