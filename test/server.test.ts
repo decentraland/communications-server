@@ -58,7 +58,7 @@ describe('server tests', () => {
       ws.send = sinon.stub()
       fakeConnect(wss, ws)
 
-      expect(wss.clients.size).to.equal(0)
+      expect(wss.clients.size).to.equal(1)
     })
 
     it('server should set initial position on first location message', () => {
