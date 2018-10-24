@@ -1,21 +1,6 @@
 node {
   stage('Git clone/update') {
-        sshagent(credentials : ['communications-server']) {
-        sh '''
-            #Check the content of the payload and extract the Branch
-            Branch="master"
-            echo "********"
-            echo $GIT_BRANCH
-            echo $GITHUB_PR_HEAD_SHA
-            echo "********"
-
-            git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
-            git checkout $Branch
-            if test $? -ne 0; then
-              echo "Unable to checkout $Branch."
-            fi
-            git fetch
-            git pull'''
+        git url: ${REPOURL} branch: ${GITHUB_PR_HEAD_SHA} credentials : ['communications-server']
   }
   stage('Image building') {
         sh '''
