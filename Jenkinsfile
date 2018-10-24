@@ -12,7 +12,7 @@ node {
   }
   stage('Testing') {
         sh '''
-          docker run -e "NODE_ENV=test" ${PROJECT} make testci
+          docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci
         '''
   }
   stage('Removing  previous containers') {
