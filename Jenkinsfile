@@ -17,6 +17,7 @@ node {
   }
   stage('Removing  previous containers') {
         sh '''
+
           RUNNING_CONTAINERS=`docker ps | awk '{ print $1 }' | grep -v CONTAINER | wc -l`
           if test ${RUNNING_CONTAINERS} -ne 0; then
             docker ps | awk '{ print $1 }' | grep -v CONTAINER | xargs docker stop
