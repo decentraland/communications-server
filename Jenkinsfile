@@ -1,6 +1,6 @@
 node {
   stage('Git clone/update') {
-        git url: "${REPOURL}",
+        git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_HEAD_SHA}",
             credentialsId: 'communications-server'
   }
