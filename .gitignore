@@ -5,3 +5,5 @@ newrelic_agent.log
 lint.log
 
 .env
+
+stop.sh
