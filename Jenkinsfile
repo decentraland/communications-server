@@ -1,7 +1,7 @@
 node {
   stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
-            branch: "${GITHUB_PR_HEAD_SHA}",
+            branch: "pr/${GITHUB_PR_NUMBER}",
             credentialsId: 'communications-server'
   }
   stage('Image building') {
