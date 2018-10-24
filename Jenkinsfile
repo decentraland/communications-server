@@ -6,6 +6,7 @@ node {
             Branch="master"
             echo $GITHUB_PR_SOURCE_BRANCH
             echo "********"
+
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
             git checkout $Branch
             if test $? -ne 0; then
