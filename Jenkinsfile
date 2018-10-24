@@ -3,15 +3,10 @@ node {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
             credentialsId: 'communications-server'
-        sh '''
-            ls
-        '''
-
   }
   stage('Image building') {
         sh '''
             aws ecr get-login --no-include-email | bash
-            cd ${PROJECT}
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
         '''
   }
@@ -40,7 +35,7 @@ node {
   }
   stage('Container deploy') {
         sh '''
-          Branch="master"
+          Branch="${GITHUB_PR_SOURCE_BRANCH}"
           REGION="us-east-1"
 
           #Depending on the Branch is where to Deploy
