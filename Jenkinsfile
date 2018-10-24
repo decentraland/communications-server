@@ -6,7 +6,6 @@ node {
             Branch="master"
             echo $GIT_BRANCH
             echo "********"
-
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
             git checkout $Branch
             if test $? -ne 0; then
