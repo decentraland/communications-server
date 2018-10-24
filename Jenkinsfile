@@ -3,6 +3,10 @@ node {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
             credentialsId: 'communications-server'
+        sh '''
+            ls
+        '''
+
   }
   stage('Image building') {
         sh '''
