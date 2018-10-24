@@ -1,4 +1,4 @@
-LINK_PREFIX ?= ""
+LINK_PREFIX ?= "sudo"
 
 # to take advantage of the circleci cache let's only install if node_modules doesn't exist
 installci:
@@ -14,6 +14,11 @@ test: build
 	npm link dcl-comm-server
 	NODE_ENV=test node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
 
+testci: build
+	npm link
+	npm link dcl-comm-server
+	NODE_ENV=test node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
+
 lint:
 	./node_modules/.bin/tslint
 
@@ -22,4 +27,4 @@ start-dev: build
 
 
 
-.PHONY: installci build test lint
+.PHONY: installci build test lint link

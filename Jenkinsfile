@@ -4,6 +4,8 @@ node {
         sh '''
             #Check the content of the payload and extract the Branch
             Branch="master"
+            echo $GITHUB_PR_SOURCE_BRANCH
+            echo "********"
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
             git checkout $Branch
             if test $? -ne 0; then
@@ -33,7 +35,7 @@ node {
   }
   stage('Testing') {
         sh '''
-          echo "Here goes the test"
+          docker run -e "NODE_ENV=test" ${PROJECT} make testci
         '''
   }
   stage('Image push') {
