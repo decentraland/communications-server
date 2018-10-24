@@ -10,26 +10,26 @@ void setBuildStatus(String message, String state) {
 
 
 node {
-  stage('Git clone/update') {
+    stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
             credentialsId: 'communications-server'
-  }
-  stage('Image building') {
+    }
+    stage('Image building') {
         sh '''
             aws ecr get-login --no-include-email | bash
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
         '''
-  }
-  stage('Testing') {
+    }
+    stage('Testing') {
         try {
             sh 'docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci'
             setBuildStatus("Build complete", "SUCCESS");
-        } catch {
+        } catch (exc) {
             setBuildStatus("Build complete", "FAILURE");
         }
-  }
-  stage('Removing  previous containers') {
+    }
+    stage('Removing  previous containers') {
         sh '''
           RUNNING_CONTAINERS=`docker ps | awk '{ print $1 }' | grep -v CONTAINER | wc -l`
           if test ${RUNNING_CONTAINERS} -ne 0; then
@@ -40,14 +40,14 @@ node {
             docker ps -a | awk '{ print $1 }' | grep -v CONTAINER | xargs docker rm
           fi
         '''
-  }
-  stage('Image push') {
+    }
+    stage('Image push') {
         sh '''
           docker push ${ECREGISTRY}/${PROJECT}:latest
           docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
-  }
-  stage('Container deploy') {
+    }
+    stage('Container deploy') {
         sh '''
           Branch="${GITHUB_PR_SOURCE_BRANCH}"
           REGION="us-east-1"
@@ -70,5 +70,5 @@ node {
             ;;
           esac
         '''
-  }
+    }
 }
