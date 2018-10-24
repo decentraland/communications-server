@@ -10,7 +10,6 @@ void setBuildStatus(String message, String state) {
 
 
 node {
-
   stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
@@ -23,10 +22,12 @@ node {
         '''
   }
   stage('Testing') {
-        sh '''
-          docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci
-        '''
-        setBuildStatus("Build complete", "SUCCESS");
+        try {
+            sh 'docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci'
+            setBuildStatus("Build complete", "SUCCESS");
+        } catch {
+            setBuildStatus("Build complete", "FAILURE");
+        }
   }
   stage('Removing  previous containers') {
         sh '''
