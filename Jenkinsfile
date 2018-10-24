@@ -6,6 +6,7 @@ node {
             Branch="master"
             echo "********"
             echo $GIT_BRANCH
+            echo $GITHUB_PR_HEAD_SHA
             echo "********"
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
             git checkout $Branch
