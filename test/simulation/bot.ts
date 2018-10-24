@@ -33,6 +33,15 @@ function direction(a: V2, b: V2) {
   return v
 }
 
+const AVATARS = ['fox', 'round robot', 'square robot']
+
+function getRandomAvatar() {
+  const i = Math.floor(Math.random() * AVATARS.length)
+  const avatar = AVATARS[i]
+  console.log(i, avatar)
+  return avatar
+}
+
 export enum SocketReadyState {
   CONNECTING,
   OPEN,
@@ -41,6 +50,7 @@ export enum SocketReadyState {
 }
 
 type BotOptions = {
+  avatar?: string
   speakFreqMs: number
 }
 
@@ -113,7 +123,8 @@ class Bot {
   }
 }
 
-function startBot({ speakFreqMs }: BotOptions): Bot {
+function startBot({ speakFreqMs, avatar }: BotOptions): Bot {
+  avatar = avatar || getRandomAvatar()
   const peerId = uuid()
   const bot = new Bot(peerId)
   bot.profileInterval = setInterval(() => {
@@ -124,7 +135,7 @@ function startBot({ speakFreqMs }: BotOptions): Bot {
       msg.setPositionX(bot.p.x)
       msg.setPositionZ(bot.p.z)
       msg.setPeerId(peerId)
-      msg.setAvatarType('fox')
+      msg.setAvatarType(avatar)
       msg.setDisplayName(peerId)
       bot.broadcastMessage(msg)
     }
@@ -188,7 +199,9 @@ export function startWalkingBot(opts: WalkingBotOptions): Bot {
 
   bot.p = checkpoints[0]
   let destCheckpointIndex = 1
-  let stepsUntilNextCheckpoint = Math.floor(checkpoints[destCheckpointIndex - 1].minus(checkpoints[destCheckpointIndex]).length() / d)
+  let stepsUntilNextCheckpoint = Math.floor(
+    checkpoints[destCheckpointIndex - 1].minus(checkpoints[destCheckpointIndex]).length() / d
+  )
   let deltaCheckpoint = direction(checkpoints[destCheckpointIndex], checkpoints[destCheckpointIndex - 1]).scalarProd(d)
   bot.positionInterval = setInterval(() => {
     bot.p = bot.p.sum(deltaCheckpoint)
@@ -200,7 +213,9 @@ export function startWalkingBot(opts: WalkingBotOptions): Bot {
         ++destCheckpointIndex
       }
       deltaCheckpoint = direction(checkpoints[destCheckpointIndex], checkpoints[destCheckpointIndex - 1]).scalarProd(d)
-      stepsUntilNextCheckpoint = Math.floor(checkpoints[destCheckpointIndex - 1].minus(checkpoints[destCheckpointIndex]).length() / d)
+      stepsUntilNextCheckpoint = Math.floor(
+        checkpoints[destCheckpointIndex - 1].minus(checkpoints[destCheckpointIndex]).length() / d
+      )
     } else {
       --stepsUntilNextCheckpoint
     }

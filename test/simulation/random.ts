@@ -21,7 +21,7 @@ function startRandomWalkingBot() {
 
   const path = {
     checkpoints: checkpoints,
-    durationMs: 10000
+    durationMs: 100000
   }
 
   startWalkingBot({ path, speakFreqMs: 1000 })

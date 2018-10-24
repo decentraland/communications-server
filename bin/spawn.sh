@@ -21,4 +21,5 @@ PORT=9097 start
 PORT=9098 start
 PORT=9099 start
 
-echo "to stop the servers run kill -kill ${pids[*]}"
+echo "kill -kill ${pids[*]}" > stop.sh
+chmod +x stop.sh
