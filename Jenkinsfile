@@ -10,6 +10,11 @@ node {
             docker build -t ${ECREGISTRY}/${PROJECT}:latest .
         '''
   }
+  stage('Testing') {
+        sh '''
+          docker run -e "NODE_ENV=test" ${PROJECT} make testci
+        '''
+  }
   stage('Removing  previous containers') {
         sh '''
           RUNNING_CONTAINERS=`docker ps | awk '{ print $1 }' | grep -v CONTAINER | wc -l`
@@ -20,11 +25,6 @@ node {
           if test ${RUNNING_CONTAINERS} -ne 0; then
             docker ps -a | awk '{ print $1 }' | grep -v CONTAINER | xargs docker rm
           fi
-        '''
-  }
-  stage('Testing') {
-        sh '''
-          docker run -e "NODE_ENV=test" ${PROJECT} make testci
         '''
   }
   stage('Image push') {
