@@ -33,7 +33,6 @@ node {
           docker push ${ECREGISTRY}/${PROJECT}:latest
           docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
-        }
   }
   stage('Container deploy') {
         sh '''
