@@ -1,6 +1,6 @@
 node_modules
 dist
-.terraform/main/.terraform
+.terraform
 newrelic_agent.log
 lint.log
 
