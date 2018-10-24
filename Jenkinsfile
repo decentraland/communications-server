@@ -1,4 +1,16 @@
+void setBuildStatus(String message, String state) {
+  step([
+      $class: "GitHubCommitStatusSetter",
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${PROJECT_URL}"],
+      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+  ]);
+}
+
+
 node {
+
   stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
@@ -14,6 +26,7 @@ node {
         sh '''
           docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci
         '''
+        setBuildStatus("Build complete", "SUCCESS");
   }
   stage('Removing  previous containers') {
         sh '''
