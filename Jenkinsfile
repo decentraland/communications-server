@@ -4,7 +4,7 @@ node {
         sh '''
             #Check the content of the payload and extract the Branch
             Branch="master"
-            echo $GITHUB_PR_SOURCE_BRANCH
+            echo $GIT_BRANCH
             echo "********"
 
             git clone ${REPOURL}/${PROJECT}.git && cd ${PROJECT} || cd ${PROJECT}
