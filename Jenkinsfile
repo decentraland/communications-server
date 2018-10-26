@@ -10,6 +10,7 @@ void setBuildStatus(String message, String state) {
 
 
 node {
+  try {
     stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
@@ -47,4 +48,8 @@ node {
           docker rmi ${ECREGISTRY}/${PROJECT}:latest
         '''
     }
+  } catch (caughtError) { //End of Try
+    err = caughtError
+    currentBuild.result = "FAILURE"
+  }
 }
