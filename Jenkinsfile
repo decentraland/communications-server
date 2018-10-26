@@ -11,7 +11,6 @@ void setBuildStatus(String message, String state) {
 
 node {
   try {
-    slackSend baseUrl: 'https://hooks.slack.com/services/', channel: '#pipeline-outputs', color: 'good', message: "Project - *${env.PROJECT}* \n\tBranch: *${Branch}* \n\tStatus: *Started...*\n\tJob: *${env.JOB_NAME}*  \n\tBuild Number: *${env.BUILD_NUMBER}* \n\tURL: (<${env.BUILD_URL}|Open>)", teamDomain: 'decentralandteam', tokenCredentialId: 'slack-notification-pipeline-output'
     stage('Git clone/update') {
         git url: "${REPOURL}/${PROJECT}.git",
             branch: "${GITHUB_PR_SOURCE_BRANCH}",
