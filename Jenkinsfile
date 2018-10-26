@@ -17,13 +17,17 @@ node {
     }
     stage('Image building') {
         sh '''
+            git checkout ${GITHUB_PR_SOURCE_BRANCH}
+            #Find last commit number to use as a tag
+            cd {PROJECT}
+            LASTCOMMIT=`git rev-parse HEAD`
             aws ecr get-login --no-include-email | bash
-            docker build -t ${ECREGISTRY}/${PROJECT}:latest .
+            docker build -t ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT} .
         '''
     }
     stage('Testing') {
         try {
-            sh 'docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:latest make testci'
+            sh 'docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT} make testci'
             setBuildStatus("Build complete", "SUCCESS");
         } catch (exc) {
             setBuildStatus("Build complete", "FAILURE");
@@ -43,8 +47,9 @@ node {
     }
     stage('Image push') {
         sh '''
-          docker push ${ECREGISTRY}/${PROJECT}:latest
-          docker rmi ${ECREGISTRY}/${PROJECT}:latest
+          aws ecr get-login --no-include-email | bash
+          docker push ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT}
+          docker rmi ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT}
         '''
     }
 }
