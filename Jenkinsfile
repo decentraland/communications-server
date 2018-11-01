@@ -27,7 +27,7 @@ node {
     }
     stage('Testing') {
         try {
-            sh 'docker run -e "NODE_ENV=test" ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT} make testci'
+            sh 'docker run --name ${PROJECT} -e "NODE_ENV=test" --rm ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT} make testci'
             setBuildStatus("Build complete", "SUCCESS");
         } catch (exc) {
             setBuildStatus("Build complete", "FAILURE");
@@ -47,6 +47,7 @@ node {
     }
     stage('Image push') {
         sh '''
+          LASTCOMMIT=`git rev-parse HEAD`
           aws ecr get-login --no-include-email | bash
           docker push ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT}
           docker rmi ${ECREGISTRY}/${PROJECT}:${LASTCOMMIT}
