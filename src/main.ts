@@ -1,5 +1,5 @@
 import { Config } from './config'
-import { startServer } from './server'
+import { start } from './server'
 
 const config = new Config()
 
@@ -7,4 +7,4 @@ process.on('uncaughtException', err => {
   config.logger.error({ err }, 'Uncaught exception')
 })
 
-startServer(config)
+start(config)

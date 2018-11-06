@@ -71,8 +71,10 @@ type ModuleConfig = {
   wss: WebSocket.Server
 }
 
-export function startServer(config: Config) {
-  const httpServer = http.createServer()
+export function start(config: Config, httpServer?) {
+  if (!httpServer) {
+    httpServer = http.createServer()
+  }
 
   const modules: ModuleConfig[] = []
 

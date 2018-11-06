@@ -1,4 +1,4 @@
-LINK_PREFIX ?= "sudo"
+LINK_PREFIX ?= ""
 
 
 # to take advantage of the circleci cache let's only install if node_modules doesn't exist
