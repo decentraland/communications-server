@@ -1,11 +1,11 @@
-import { settings } from './settings'
+import { APP_NAME } from './config'
 
 export const config = {
-  app_name: [settings.appName],
+  app_name: [APP_NAME],
   /**
    * Your New Relic license key.
    */
-  license_key: settings.newRelicLicenseKey,
+  license_key: process.env.NEW_RELIC_LICENSE_KEY,
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing
