@@ -86,12 +86,19 @@ export function start(config: Config, httpServer?) {
 
   httpServer.on('upgrade', (req, socket, head) => {
     const reqPathname = parse(req.url).pathname
+    let found = false
     for (let { wss, pathname } of modules) {
       if (pathname === reqPathname) {
+        found = true
         wss.handleUpgrade(req, socket, head, ws => {
           wss.emit('connection', ws, req)
         })
       }
+    }
+
+    if (!found) {
+      config.logger.debug(`cannot find module matching url ${reqPathname}`)
+      socket.destroy()
     }
   })
 
