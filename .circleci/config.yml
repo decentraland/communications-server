@@ -21,4 +21,4 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package-lock.json" }}
 
-      - run: make test LINK_PREFIX=sudo
+      - run: make testci LINK_PREFIX=sudo
