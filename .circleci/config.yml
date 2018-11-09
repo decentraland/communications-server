@@ -45,14 +45,12 @@ jobs:
           command: docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
       - run:
-          name: Push to DockerHub
-          command: docker push "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1"
-
-      - run:
           name: Tag docker image
           command: |
             if echo "$CIRCLE_BRANCH" | grep "^master$"; then
               docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_BRANCH"
+            else
+              echo 'Not in master, skipping :master tag'
             fi
 
       - run:
@@ -63,6 +61,11 @@ jobs:
             else
               echo "Not a release, skipping tag"
             fi
+
+      - run:
+          name: Push to DockerHub
+          command: docker push "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1"
+
 
 workflows:
   version: 2
