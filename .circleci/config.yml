@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:8.12
+      - image: circleci/node:10
 
     working_directory: ~/repo
 
@@ -12,7 +12,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}
+            - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - run: make installci
 
@@ -22,3 +22,59 @@ jobs:
           key: v1-dependencies-{{ checksum "package-lock.json" }}
 
       - run: make testci LINK_PREFIX=sudo
+
+  build-image:
+    docker:
+      - image: circleci/node:10
+        environment:
+          DOCKER_IMAGE_NAME: decentraland/communications
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      # - run:
+      #     name: Log in DockerHub
+      #     docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - run:
+          name: Build Docker image
+          command: docker build -t $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 .
+
+      # - run:
+      #     name: Push to DockerHub
+      #     command: docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
+
+      # IF TAG docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:$CIRCLE_TAG
+
+      # IF MASTER docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:next
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - build-image:
+          requires:
+            - build
+      #     filters:
+      #       branches:
+      #         ignore: master
+      # - deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: master
