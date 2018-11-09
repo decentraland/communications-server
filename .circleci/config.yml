@@ -71,11 +71,6 @@ jobs:
           command: |
             docker tag $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 $DOCKER_IMAGE_NAME:next
 
-      - run:
-          name: Deploy
-          command: |
-            echo 'deploy $DOCKER_IMAGE_NAME:$CIRCLE_SHA1'
-
   deploy-prod:
     docker:
       - image: circleci/node:10
@@ -91,12 +86,7 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_TAG"
-
-      - run:
-          name: Deploy
-          command: |
-            echo 'deploy $DOCKER_IMAGE_NAME:$CIRCLE_SHA1'
+            node -e "process.exit(/\d+\.\d+\.\d+/.test(process.env.CIRCLE_TAG) ? 0 : 1)" && docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_TAG" || true
 
 workflows:
   version: 2
