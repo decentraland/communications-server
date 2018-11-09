@@ -124,5 +124,6 @@ workflows:
       - deploy-prod:
           requires:
             - build-image
+          filters:
             tags:
               only: /\d+\.\d+\.\d+/
