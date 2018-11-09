@@ -47,17 +47,11 @@ jobs:
 
       - run: &LOGIN_DOCKER
           name: Log in DockerHub
-          command: |
-            if [ "$CIRCLE_BRANCH" == "master" ]; then
-              docker login -u "$DOCKER_USER" -p "$DOCKER_PASS";
-            fi
+          command: docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
       - run:
           name: Push to DockerHub
-          command: |
-            if [ "$CIRCLE_BRANCH" == "master" ]; then
-              docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1;
-            fi
+          command: docker push "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1"
 
   deploy-staging:
     docker:
@@ -90,7 +84,6 @@ jobs:
     working_directory: ~/repo
 
     steps:
-
       - setup_remote_docker: { docker_layer_caching: true }
 
       - run: *LOGIN_DOCKER
@@ -98,7 +91,7 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            docker tag $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 $DOCKER_IMAGE_NAME:$CIRCLE_TAG
+            docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_TAG"
 
       - run:
           name: Deploy
