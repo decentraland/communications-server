@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY . .
 
-RUN npm install && npm run test && npm prune --production
+RUN npm install && make test && npm prune --production
 
 
 # DEPLOY STAGE
