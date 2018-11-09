@@ -49,7 +49,9 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_BRANCH"
+            if echo "$CIRCLE_BRANCH" | grep "^master$"; then
+              docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_BRANCH"
+            fi
 
       - run:
           name: Tag docker image
@@ -73,5 +75,5 @@ workflows:
           requires:
             - build
           filters:
-            branches:
-              only: master
+            tags:
+              only: /.*/
