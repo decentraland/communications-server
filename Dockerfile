@@ -1,13 +1,22 @@
-FROM node:8.12
+# BUILD STAGE
+FROM node:10 as builder
 
 WORKDIR /usr/src/app
 
 # Install app dependencies
-COPY package*.json ./
-RUN npm ci
-
-# Bundle app source
 COPY . .
 
+RUN npm ci && make test && npm prune --production
+
+
+# DEPLOY STAGE
+FROM node:10-alpine
+
+WORKDIR /root
+
+# Bundle app source
+COPY --from=builder /usr/src/app .
+
 EXPOSE 9090
+
 CMD [ "npm", "start" ]
