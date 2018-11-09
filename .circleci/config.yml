@@ -47,12 +47,13 @@ jobs:
 
       - run: &LOGIN_DOCKER
           name: Log in DockerHub
-          command: docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+          command: |
+            [ "$CIRCLE_BRANCH" == "master" ] && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
       - run:
           name: Push to DockerHub
           command: |
-            docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
+            [ "$CIRCLE_BRANCH" == "master" ] && docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
 
   deploy-staging:
     docker:
@@ -70,7 +71,7 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:next
+            docker tag $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 $DOCKER_IMAGE_NAME:next
 
       - run:
           name: Deploy
@@ -93,7 +94,7 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:$CIRCLE_TAG
+            docker tag $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 $DOCKER_IMAGE_NAME:$CIRCLE_TAG
 
       - run:
           name: Deploy
