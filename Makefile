@@ -22,7 +22,5 @@ lint:
 start-dev: build
 	NODE_ENV=dev AUTHORIZATION_ENABLED=no node dist/main.js
 
-build-docker:
-  
 
 .PHONY: installci build test lint link
