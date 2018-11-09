@@ -3,13 +3,14 @@ jobs:
   build:
     docker:
       - image: circleci/node:10
+        environment: &ENVIRONMENT
+          DOCKER_IMAGE_NAME: decentraland/communications
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package-lock.json" }}
@@ -26,8 +27,7 @@ jobs:
   build-image:
     docker:
       - image: circleci/node:10
-        environment:
-          DOCKER_IMAGE_NAME: decentraland/communications
+        environment: *ENVIRONMENT
 
     working_directory: ~/repo
 
@@ -39,24 +39,66 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-
-      # - run:
-      #     name: Log in DockerHub
-      #     docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - setup_remote_docker: { docker_layer_caching: true }
 
       - run:
           name: Build Docker image
           command: docker build -t $DOCKER_IMAGE_NAME:$CIRCLE_SHA1 .
 
-      # - run:
-      #     name: Push to DockerHub
-      #     command: docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
+      - run: &LOGIN_DOCKER
+          name: Log in DockerHub
+          command: docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
 
-      # IF TAG docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:$CIRCLE_TAG
+      - run:
+          name: Push to DockerHub
+          command: |
+            docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
 
-      # IF MASTER docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:next
+  deploy-staging:
+    docker:
+      - image: circleci/node:10
+        environment: *ENVIRONMENT
+
+    working_directory: ~/repo
+
+    steps:
+
+      - setup_remote_docker: { docker_layer_caching: true }
+
+      - run: *LOGIN_DOCKER
+
+      - run:
+          name: Tag docker image
+          command: |
+            docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:next
+
+      - run:
+          name: Deploy
+          command: |
+            echo 'deploy $DOCKER_IMAGE_NAME:$CIRCLE_SHA1'
+
+  deploy-prod:
+    docker:
+      - image: circleci/node:10
+        environment: *ENVIRONMENT
+
+    working_directory: ~/repo
+
+    steps:
+
+      - setup_remote_docker: { docker_layer_caching: true }
+
+      - run: *LOGIN_DOCKER
+
+      - run:
+          name: Tag docker image
+          command: |
+            docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_NAME:$CIRCLE_TAG
+
+      - run:
+          name: Deploy
+          command: |
+            echo 'deploy $DOCKER_IMAGE_NAME:$CIRCLE_SHA1'
 
 workflows:
   version: 2
@@ -66,15 +108,20 @@ workflows:
           filters:
             tags:
               only: /.*/
+
       - build-image:
           requires:
             - build
-      #     filters:
-      #       branches:
-      #         ignore: master
-      # - deploy:
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: master
+
+      - deploy-staging:
+          requires:
+            - build-image
+          filters:
+            branches:
+              only: master
+
+      - deploy-prod:
+          requires:
+            - build-image
+            tags:
+              only: /\d+\.\d+\.\d+/
