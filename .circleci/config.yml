@@ -86,7 +86,11 @@ jobs:
       - run:
           name: Tag docker image
           command: |
-            node -e "process.exit(/\d+\.\d+\.\d+/.test(process.env.CIRCLE_TAG) ? 0 : 1)" && docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_TAG" || true
+            if echo "$CIRCLE_TAG" | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$"; then
+              docker tag "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1" "$DOCKER_IMAGE_NAME:$CIRCLE_TAG"
+            else
+              echo "Not a release, skipping tag"
+            fi
 
 workflows:
   version: 2
