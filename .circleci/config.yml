@@ -48,12 +48,16 @@ jobs:
       - run: &LOGIN_DOCKER
           name: Log in DockerHub
           command: |
-            [ "$CIRCLE_BRANCH" == "master" ] && docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            if [ "$CIRCLE_BRANCH" == "master" ]; then
+              docker login -u "$DOCKER_USER" -p "$DOCKER_PASS";
+            fi
 
       - run:
           name: Push to DockerHub
           command: |
-            [ "$CIRCLE_BRANCH" == "master" ] && docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1
+            if [ "$CIRCLE_BRANCH" == "master" ]; then
+              docker push $DOCKER_IMAGE_NAME:$CIRCLE_SHA1;
+            fi
 
   deploy-staging:
     docker:
