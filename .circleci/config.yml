@@ -55,7 +55,6 @@ jobs:
               docker push "$DOCKER_IMAGE_NAME:$CIRCLE_TAG"
             else
               echo "Not a release, skipping push"
-              # docker push "$DOCKER_IMAGE_NAME:$CIRCLE_SHA1"
             fi
 
 workflows:
