@@ -23,14 +23,6 @@ function getCurrentEnv(): Env {
   }
 }
 
-function isAuthorizationEnabled(env: Env): boolean {
-  if (env === Env.PRODUCTION) {
-    return true
-  }
-
-  return process.env.AUTHORIZATION_ENABLED !== 'no'
-}
-
 type LogstashConfig = {
   host: string
   port: number
@@ -71,8 +63,8 @@ export class Config {
   public env: Env
   public logstashConfig: LogstashConfig | null
   public logLevel = 'info'
-  public ethProviderHost = 'http://localhost:8545'
-  public host: string = 'localhost'
+  public ethProviderHost = process.env.ETH_PROVIDER_HOST
+  public host: string = process.env.HOST || 'localhost'
   public port: number = parseInt(process.env.PORT, 10) || 9090
   public schema: string = 'ws'
   public authorizationEnabled: boolean
@@ -84,7 +76,7 @@ export class Config {
 
   constructor() {
     this.env = getCurrentEnv()
-    this.authorizationEnabled = isAuthorizationEnabled(this.env)
+    this.authorizationEnabled = process.env.AUTHORIZATION_ENABLED !== 'no'
 
     this.logger = createLogger(this)
     this.agent = new MetricsAgent(newrelic)
