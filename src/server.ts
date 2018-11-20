@@ -15,6 +15,7 @@ function createWss(config: Config, httpServer) {
     noServer: true
   } as WebSocket.ServerOptions
 
+  console.log('authorization enabled', config.authorizationEnabled)
   if (config.authorizationEnabled) {
     const provider = new providers.HTTPProvider(config.ethProviderHost)
     const validateRequest = async req => {
@@ -98,6 +99,7 @@ export function start(config: Config, httpServer?) {
 
     if (!found) {
       config.logger.debug(`cannot find module matching url ${reqPathname}`)
+      console.log(`cannot find module matching url ${reqPathname}`)
       socket.destroy()
     }
   })
