@@ -8,7 +8,7 @@ import {
   ClientDisconnectedFromServerMessage,
   GenericMessage,
   FlowStatus
-} from 'dcl-comm-protocol'
+} from '../../src/worldcomm_pb'
 
 export function decodeMessageType(msg: Uint8Array) {
   try {
@@ -25,17 +25,18 @@ export function messageTypeMatcher(typeToMatch) {
   })
 }
 
-export function buildPositionMessage(peerId: string, x: number, z: number, time?: number) {
+export function buildPositionMessage(alias: number, x: number, z: number, time?: number) {
   const m = new PositionMessage()
   m.setType(MessageType.POSITION)
   m.setTime(time ? time : Date.now())
-  m.setPeerId(peerId)
+  m.setAlias(alias)
   m.setPositionX(x)
   m.setPositionZ(z)
   return m
 }
 
 export function buildProfileMessage(
+  alias: number,
   peerId: string,
   x: number,
   z: number,
@@ -52,26 +53,27 @@ export function buildProfileMessage(
   m.setAvatarType(avatarType)
   m.setDisplayName(displayName)
   m.setPeerId(peerId)
+  m.setAlias(alias)
   m.setPublicKey(publicKey)
   return m
 }
 
-export function buildChatMessage(peerId: string, x: number, z: number, text: string, time?: number) {
+export function buildChatMessage(alias: number, x: number, z: number, text: string, time?: number) {
   const m = new ChatMessage()
   m.setTime(time ? time : Date.now())
   m.setType(MessageType.CHAT)
-  m.setPeerId(peerId)
+  m.setAlias(alias)
   m.setPositionX(x)
   m.setPositionZ(z)
   m.setText(text)
   return m
 }
 
-export function buildClientDisconnectedFromServerMessage(peerId: string, time?: number) {
+export function buildClientDisconnectedFromServerMessage(alias: number, time?: number) {
   const m = new ClientDisconnectedFromServerMessage()
   m.setTime(time ? time : Date.now())
   m.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
-  m.setPeerId(peerId)
+  m.setAlias(alias)
   return m
 }
 

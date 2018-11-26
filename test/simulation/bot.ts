@@ -1,6 +1,6 @@
 import * as uuid from 'uuid/v4'
 import * as WebSocket from 'ws'
-import { ChatMessage, ProfileMessage, PositionMessage, MessageType } from 'dcl-comm-protocol'
+import { ChatMessage, ProfileMessage, PositionMessage, MessageType } from '../../src/worldcomm_pb'
 import { getCommServerUrl } from './serverData'
 import { setInterval } from 'timers'
 import { getRndLine } from '../utils/chatHelpers'
@@ -86,22 +86,36 @@ class Bot {
     if (this.p) {
       const parcelX = Math.floor(this.p.x)
       const parcelY = Math.floor(this.p.z)
-      let connectedToParcel = false
-      for (let connection of this.connections) {
-        connectedToParcel = parcelX === connection.x && parcelY === connection.y
-        if (connectedToParcel) {
-          break
-        }
-      }
 
-      if (!connectedToParcel) {
-        console.log(`CONNECTING TO ${parcelX} ${parcelY}`)
+      if (this.connections.length === 0) {
         const url = getCommServerUrl(parcelX, parcelY)
 
         const ws = new WebSocket(url)
+        ws.on('open', () => {
+          console.log('OPEN')
+        })
+        ws.on('close', () => {
+          console.log('closed')
+        })
         const connection = { x: parcelX, y: parcelY, ws }
         this.connections.push(connection)
       }
+      // let connectedToParcel = false
+      // for (let connection of this.connections) {
+      //   connectedToParcel = parcelX === connection.x && parcelY === connection.y
+      //   if (connectedToParcel) {
+      //     break
+      //   }
+      // }
+
+      // if (!connectedToParcel) {
+      //   console.log(`CONNECTING TO ${parcelX} ${parcelY}`)
+      //   const url = getCommServerUrl(parcelX, parcelY)
+
+      //   const ws = new WebSocket(url)
+      //   const connection = { x: parcelX, y: parcelY, ws }
+      //   this.connections.push(connection)
+      // }
     }
 
     const bytes = msg.serializeBinary()
@@ -150,7 +164,6 @@ function startBot({ speakFreqMs, avatar }: BotOptions): Bot {
         msg.setMessageId(uuid())
         msg.setPositionX(bot.p.x)
         msg.setPositionZ(bot.p.z)
-        msg.setPeerId(peerId)
         msg.setText(getRndLine())
         bot.broadcastMessage(msg)
       }
@@ -175,7 +188,6 @@ export function startStandingBot(opts: StandingBotOptions): Bot {
     msg.setRotationY(0)
     msg.setRotationZ(0)
     msg.setRotationW(1)
-    msg.setPeerId(bot.peerId)
     bot.broadcastMessage(msg)
   }, 100)
 
@@ -230,7 +242,6 @@ export function startWalkingBot(opts: WalkingBotOptions): Bot {
     msg.setRotationY(0)
     msg.setRotationZ(0)
     msg.setRotationW(1)
-    msg.setPeerId(bot.peerId)
     bot.broadcastMessage(msg)
   }, 100)
 

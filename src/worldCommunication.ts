@@ -11,7 +11,7 @@ import {
   ProfileMessage,
   ClockSkewMessage,
   FlowStatusMessage
-} from 'dcl-comm-protocol'
+} from './worldcomm_pb'
 import { WorldCommunicationConfig } from './config'
 import { MetricsAgent } from './agent'
 import * as Logger from 'bunyan'
@@ -232,7 +232,7 @@ export function onNewConnection(state: WorldCommunicationState, ws: EnrichedWebS
     if (ws.peerId) {
       const msg = new ClientDisconnectedFromServerMessage()
       msg.setType(MessageType.CLIENT_DISCONNECTED_FROM_SERVER)
-      msg.setPeerId(ws.peerId)
+      msg.setAlias(ws.alias)
       msg.setTime(Date.now())
       broadcast(state, ws, msg)
     }
@@ -258,10 +258,6 @@ export function broadcast(state: WorldCommunicationState, ws: EnrichedWebSocket,
   const { wss, logger, eventLogger, agent, config } = state
   const genericMessage = msg as GenericMessage
   const msgType = genericMessage.getType()
-  if (genericMessage.getType() === MessageType.UNKNOWN_MESSAGE_TYPE) {
-    throw Error('cannot send a message without a type')
-  }
-  const bytes = msg.serializeBinary()
 
   if (!ws.position) {
     eventLogger.debug(ws, msgType, 'skip_broadcast')
@@ -269,6 +265,8 @@ export function broadcast(state: WorldCommunicationState, ws: EnrichedWebSocket,
     return
   }
 
+  msg.alias = ws.alias
+  const bytes = msg.serializeBinary()
   const commArea = new CommunicationArea(ws.position, config.communicationRadius + config.communicationRadiusTolerance)
   const totalClients = wss.clients.size
   let attemptToReach = 0

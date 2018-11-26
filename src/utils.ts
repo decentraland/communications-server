@@ -1,5 +1,5 @@
 import * as WebSocket from 'ws'
-import { FlowStatus } from 'dcl-comm-protocol'
+import { FlowStatus } from './worldcomm_pb'
 
 const MAX_PARCEL_X = 3000
 const MIN_PARCEL_X = -3000
@@ -15,6 +15,7 @@ export type EnrichedWebSocket = WebSocket & {
   lastPositionUpdate: number
   id: string
   peerId: string
+  alias: number
   isAlive: boolean
   flowStatus: FlowStatus
 }

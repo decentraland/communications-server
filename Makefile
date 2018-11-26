@@ -3,13 +3,13 @@ installci:
 	if [ ! -d "node_modules" ]; then npm ci; fi
 
 build:
+	cp src/worldcomm_pb* dist
 	npm run build
 
 link:
 	$(LINK_PREFIX) npm link
 
-test: build link
-	npm link dcl-comm-server
+test:
 	NODE_ENV=test node_modules/.bin/mocha -r ts-node/register -r source-map-support/register test/**/*.test.ts
 
 testci: build link

@@ -12,7 +12,7 @@ import {
   checkConnections,
   broadcast
 } from 'dcl-comm-server'
-import { GenericMessage, MessageType, FlowStatus } from 'dcl-comm-protocol'
+import { GenericMessage, MessageType, FlowStatus } from '../src/worldcomm_pb'
 
 import {
   messageTypeMatcher,
@@ -97,7 +97,7 @@ describe('world communication tests', () => {
     describe('POSITION message', () => {
       it('should set the initial position', () => {
         const now = Date.now()
-        const m = buildPositionMessage('peerId', 1.5, 1.5, now)
+        const m = buildPositionMessage(0, 1.5, 1.5, now)
         ws.emit('message', m.serializeBinary())
         expect(ws.position).to.deep.equal(new V2(1, 1))
         expect(ws.lastPositionUpdate).to.equal(now)
@@ -107,7 +107,7 @@ describe('world communication tests', () => {
         const now = Date.now()
         ws.lastPositionUpdate = now
         ws.position = new V2(0, 0)
-        const m = buildPositionMessage('peerId', 1.5, 1.5, now - 10000)
+        const m = buildPositionMessage(0, 1.5, 1.5, now - 10000)
         ws.emit('message', m.serializeBinary())
         expect(ws.position).to.deep.equal(new V2(0, 0))
         expect(ws.lastPositionUpdate).to.equal(now)
@@ -124,7 +124,7 @@ describe('world communication tests', () => {
           ws.lastPositionUpdate = ts - 10000
           ws.position = new V2(0, 0)
           ws.flowStatus = FlowStatus.OPEN
-          const m = buildPositionMessage('peerId', 1.5, 1.5, ts)
+          const m = buildPositionMessage(0, 1.5, 1.5, ts)
           ws.emit('message', m.serializeBinary())
         })
 
@@ -148,7 +148,7 @@ describe('world communication tests', () => {
 
         ws.position = new V2(1, 1)
         ws.flowStatus = FlowStatus.OPEN
-        const m = buildChatMessage('peerId', 1.5, 1.5, 'text', ts)
+        const m = buildChatMessage(0, 1.5, 1.5, 'text', ts)
         ws.emit('message', m.serializeBinary())
       })
 
@@ -167,7 +167,7 @@ describe('world communication tests', () => {
 
         ws.position = new V2(0, 0)
         ws.flowStatus = FlowStatus.OPEN
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key', ts)
+        const m = buildProfileMessage(0, 'peer', 1.5, 1.5, 'fox', 'name', 'key', ts)
         ws.emit('message', m.serializeBinary())
       })
 
@@ -222,7 +222,7 @@ describe('world communication tests', () => {
 
     describe('if position is not set, do nothing', () => {
       beforeEach(() => {
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key')
+        const m = buildProfileMessage(0, 'peerId', 1.5, 1.5, 'fox', 'name', 'key')
         broadcast(state, ws, m)
       })
 
@@ -241,7 +241,7 @@ describe('world communication tests', () => {
     describe('should broadcast message', () => {
       beforeEach(() => {
         setupProperCommunication()
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key')
+        const m = buildProfileMessage(0, 'peerId', 1.5, 1.5, 'fox', 'name', 'key')
         broadcast(state, ws, m)
       })
 
@@ -254,7 +254,7 @@ describe('world communication tests', () => {
       beforeEach(() => {
         setupProperCommunication()
         other.flowStatus = FlowStatus.CLOSE
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key')
+        const m = buildProfileMessage(0, 'peerId', 1.5, 1.5, 'fox', 'name', 'key')
         broadcast(state, ws, m)
       })
 
@@ -267,7 +267,7 @@ describe('world communication tests', () => {
       beforeEach(() => {
         setupProperCommunication()
         other.readyState = WebSocket.CLOSED
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key')
+        const m = buildProfileMessage(0, 'peerId', 1.5, 1.5, 'fox', 'name', 'key')
         broadcast(state, ws, m)
       })
 
@@ -280,7 +280,7 @@ describe('world communication tests', () => {
       beforeEach(() => {
         setupProperCommunication()
         other.position = new V2(100, 100)
-        const m = buildProfileMessage('peerId', 1.5, 1.5, 'fox', 'name', 'key')
+        const m = buildProfileMessage(0, 'peerId', 1.5, 1.5, 'fox', 'name', 'key')
         broadcast(state, ws, m)
       })
 
