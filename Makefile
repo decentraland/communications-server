@@ -3,8 +3,8 @@ installci:
 	if [ ! -d "node_modules" ]; then npm ci; fi
 
 build:
-	cp src/worldcomm_pb* dist
 	npm run build
+	cp src/worldcomm_pb* dist
 
 link:
 	$(LINK_PREFIX) npm link
