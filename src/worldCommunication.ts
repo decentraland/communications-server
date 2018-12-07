@@ -163,7 +163,11 @@ export function onNewConnection(state: WorldCommunicationState, ws: EnrichedWebS
         const status = message.getFlowStatus()
 
         if (status !== FlowStatus.UNKNOWN_STATUS) {
-          ws.flowStatus = status
+          if (status === FlowStatus.OPEN_WEBRTC_PREFERRED) {
+            ws.flowStatus = FlowStatus.OPEN
+          } else {
+            ws.flowStatus = status
+          }
         }
         break
       }
