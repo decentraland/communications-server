@@ -9,4 +9,4 @@ Decentraland's communication server implementation
 
 ## Copyright info
 
-This repository is protected with a standard Apache 2 licence. See the terms and conditions in the [LICENSE](https://github.com/decentraland/communications-server/blob/master/LICENSE) file.
+This repository is protected with a standard Apache 2 license. See the terms and conditions in the [LICENSE](https://github.com/decentraland/communications-server/blob/master/LICENSE) file.
